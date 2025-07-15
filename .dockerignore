@@ -1,0 +1,48 @@
+# Ignore benchmark folders and test files
+benchmark/
+*.txt
+*.log
+
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log*
+
+# Environment files (should be passed as Docker env vars)
+.env
+.env.local
+.env.production
+.env.test
+
+# Git files
+.git/
+.gitignore
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
