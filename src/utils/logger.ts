@@ -29,7 +29,7 @@ export const logger = createLogger({
       ),
     }),
   ],
-  defaultMeta: { service: "express-starter" },
+  defaultMeta: { service: "real-time-chat-app" },
   transports: [new transports.Console()],
 });
 

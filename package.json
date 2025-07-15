@@ -2,12 +2,12 @@
   "name": "real-time-chat-app",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/app.ts",
-    "start": "node dist/app.js",
-    "dev:watch": "ts-node --watch src/app.ts",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "dev:watch": "ts-node --watch src/index.ts",
     "clean": "rm -rf dist"
   },
   "keywords": [],

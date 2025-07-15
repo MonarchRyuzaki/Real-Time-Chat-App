@@ -4,7 +4,7 @@ import { corsMiddleware } from "./middlewares/cors";
 import {
   globalErrorHandler,
   notFoundHandler,
-} from "./middlewares/error_handler";
+} from "./middlewares/errorHandler";
 import { morganMiddleware } from "./utils/logger";
 dotenv.config();
 

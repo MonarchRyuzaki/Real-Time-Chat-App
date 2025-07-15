@@ -46,3 +46,5 @@ test/
 tests/
 *.test.js
 *.spec.js
+
+dist
