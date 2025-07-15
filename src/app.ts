@@ -1,11 +1,11 @@
 import dotenv from "dotenv";
 import express from "express";
-import { corsMiddleware } from "./middleware/cors.js";
+import { corsMiddleware } from "./middlewares/cors";
 import {
   globalErrorHandler,
   notFoundHandler,
-} from "./middleware/error_handler.js";
-import { morganMiddleware } from "./utils/logger.js";
+} from "./middlewares/error_handler";
+import { morganMiddleware } from "./utils/logger";
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -23,7 +23,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("*", notFoundHandler);
+app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
 app.listen(PORT, async () => {
