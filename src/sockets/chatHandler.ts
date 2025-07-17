@@ -3,15 +3,7 @@ import { mockUsers } from "../mockData";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
 
 export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
-  const username = mapSocketToUser.get(ws);
-  ws.send(
-    JSON.stringify({
-      type: "INIT_DATA",
-      friends: username
-        ? mockUsers[username as keyof typeof mockUsers]?.friends || []
-        : [],
-    })
-  );
+  initChatHandler(ws);
   ws.on("message", (data: string) => {
     const parsed = JSON.parse(data);
     switch (parsed.type) {
@@ -31,6 +23,18 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
   ws.on("close", () => {
     console.log("Client disconnected");
   });
+}
+
+function initChatHandler(ws: WebSocket): void {
+  const username = mapSocketToUser.get(ws);
+  ws.send(
+    JSON.stringify({
+      type: "INIT_DATA",
+      friends: username
+        ? mockUsers[username as keyof typeof mockUsers]?.friends || []
+        : [],
+    })
+  );
 }
 
 function getOneToOneChatHistoryHandler(
