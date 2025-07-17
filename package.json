@@ -5,10 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node src/index.ts",
     "start": "node dist/index.js",
     "dev:watch": "ts-node --watch src/index.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "client": "ts-node client.ts",
+    "test-client": "ts-node test-client.ts"
   },
   "keywords": [],
   "author": "",
