@@ -1,5 +1,6 @@
+import { get } from "http";
 import { WebSocket, WebSocketServer } from "ws";
-import { mockUsers } from "../mockData";
+import { mockGroups, mockUsers } from "../mockData";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
 
 export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
@@ -12,6 +13,18 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
         break;
       case "ONE_TO_ONE_CHAT":
         oneToOneChatHandler(ws, parsed);
+        break;
+      case "CREATE_GROUP_CHAT":
+        createGroupChatHandler(ws, parsed);
+        break;
+      case "JOIN_GROUP_CHAT":
+        joinGroupChatHandler(ws, parsed);
+        break;
+      case "GET_GROUP_CHAT_HISTORY":
+        getGroupChatHistoryHandler(ws, parsed);
+        break;
+      case "GROUP_CHAT":
+        groupChatHandler(ws, parsed);
         break;
       case "DISCONNECT":
         disconnectHandler(ws);
@@ -91,5 +104,109 @@ function disconnectHandler(ws: WebSocket): void {
     ws.send(
       JSON.stringify({ type: "INFO", msg: "You have been disconnected." })
     );
+  }
+}
+
+function createGroupChatHandler(
+  ws: WebSocket,
+  parsed: { type: string; groupName: string }
+) {
+  const groupName = parsed.groupName;
+  const groupChatId = `group-${Date.now()}`;
+  (mockGroups as any)[groupChatId] = {
+    groupChatId,
+    groupName,
+    createdBy: mapSocketToUser.get(ws) || "unknown",
+    members: [],
+    messages: [],
+  };
+
+  ws.send(
+    JSON.stringify({
+      type: "GROUP_CHAT_CREATED",
+      groupChatId,
+    })
+  );
+}
+
+function joinGroupChatHandler(
+  ws: WebSocket,
+  parsed: { type: string; groupId: string }
+) {
+  const groupId = parsed.groupId;
+  if (groupId in mockGroups) {
+    const username = mapSocketToUser.get(ws);
+    if (username) {
+      (mockGroups as any)[groupId].members.push(username);
+      ws.send(
+        JSON.stringify({
+          type: "GROUP_CHAT_JOINED",
+          groupId,
+          groupName: (mockGroups as any)[groupId].groupName,
+        })
+      );
+    } else {
+      ws.send(
+        JSON.stringify({
+          type: "ERROR",
+          msg: "You must be logged in to join a group chat.",
+        })
+      );
+    }
+  }
+}
+
+function getGroupChatHistoryHandler(
+  ws: WebSocket,
+  parsed: { type: string; groupId: string }
+) {
+  const groupId = parsed.groupId;
+  if (groupId in mockGroups) {
+    ws.send(
+      JSON.stringify({
+        type: "GROUP_CHAT_HISTORY",
+        messages: (mockGroups as any)[groupId].messages,
+      })
+    );
+  } else {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `Group chat with ID ${groupId} does not exist.`,
+      })
+    );
+  }
+}
+
+function groupChatHandler(
+  ws: WebSocket,
+  parsed: { type: string; from: string; to: string; content: string }
+) {
+  const groupId = parsed.to;
+  const fromUsername = parsed.from;
+  const messageContent = parsed.content;
+
+  if (groupId in mockGroups) {
+    const groupChat = (mockGroups as any)[groupId];
+    groupChat.messages.push({
+      from: fromUsername,
+      text: messageContent,
+      timestamp: new Date().toISOString(),
+    });
+
+    groupChat.members.forEach((member: string) => {
+      if (member === fromUsername) return;
+      const memberSocket = mapUserToSocket.get(member);
+      if (memberSocket) {
+        memberSocket.send(
+          JSON.stringify({
+            type: "GROUP_CHAT",
+            from: fromUsername,
+            groupId,
+            content: messageContent,
+          })
+        );
+      }
+    });
   }
 }
