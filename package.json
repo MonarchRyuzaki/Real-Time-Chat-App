@@ -10,7 +10,8 @@
     "dev:watch": "ts-node --watch src/index.ts",
     "clean": "rm -rf dist",
     "client": "ts-node client.ts",
-    "test-client": "ts-node test-client.ts"
+    "test-client": "ts-node test-client.ts",
+    "group-test-client": "ts-node group-test-client.ts"
   },
   "keywords": [],
   "author": "",

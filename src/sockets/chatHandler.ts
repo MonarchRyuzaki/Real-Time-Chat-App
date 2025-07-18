@@ -46,6 +46,15 @@ function initChatHandler(ws: WebSocket): void {
       friends: username
         ? mockUsers[username as keyof typeof mockUsers]?.friends || []
         : [],
+      groups:
+        mockUsers[username as keyof typeof mockUsers]?.groups.map((group) => {
+          return {
+            groupId: group,
+            groupName:
+              mockGroups[group as keyof typeof mockGroups]?.groupName ||
+              "Unknown Group",
+          };
+        }) || [],
     })
   );
 }
