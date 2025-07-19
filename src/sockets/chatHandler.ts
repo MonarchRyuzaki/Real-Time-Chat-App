@@ -8,6 +8,9 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
   ws.on("message", (data: string) => {
     const parsed = JSON.parse(data);
     switch (parsed.type) {
+      case "NEW_ONE_TO_ONE_CHAT":
+        newOnetoOneChatHandler(ws, parsed);
+        break;
       case "GET_ONE_TO_ONE_HOSTORY":
         getOneToOneChatHistoryHandler(ws, parsed);
         break;
@@ -57,6 +60,39 @@ function initChatHandler(ws: WebSocket): void {
         }) || [],
     })
   );
+}
+
+function newOnetoOneChatHandler(
+  ws: WebSocket,
+  parsed: { type: string; from: string; to: string }
+): void {
+  const fromUsername = parsed.from;
+  const toUsername = parsed.to;
+
+  if (mapUserToSocket.has(toUsername)) {
+    const recipientSocket = mapUserToSocket.get(toUsername);
+    if (recipientSocket) {
+      recipientSocket.send(
+        JSON.stringify({
+          type: "NEW_ONE_TO_ONE_CHAT_AP",
+          from: fromUsername,
+        })
+      );
+      ws.send(
+        JSON.stringify({
+          type: "NEW_ONE_TO_ONE_CHAT_AP",
+          msg: `Chat request sent to ${toUsername}.`,
+        })
+      );
+    }
+  } else {
+    ws.send(
+      JSON.stringify({
+        type: "INFO",
+        msg: `User ${toUsername} is not online.`,
+      })
+    );
+  }
 }
 
 function getOneToOneChatHistoryHandler(
