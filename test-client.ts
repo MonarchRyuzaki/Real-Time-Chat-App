@@ -160,7 +160,7 @@ async function testMenu() {
       if (requesterClient) {
         requesterClient.ws.send(
           JSON.stringify({
-            type: "GET_ONE_TO_ONE_HOSTORY",
+            type: "GET_ONE_TO_ONE_HISTORY",
             from: requester,
             to: friendName,
           })
@@ -239,7 +239,7 @@ async function testMenu() {
         await new Promise((resolve) => setTimeout(resolve, 500));
         alice.ws.send(
           JSON.stringify({
-            type: "GET_ONE_TO_ONE_HOSTORY",
+            type: "GET_ONE_TO_ONE_HISTORY",
             from: "alice",
             to: "bob",
           })

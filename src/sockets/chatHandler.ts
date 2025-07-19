@@ -11,7 +11,7 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
       case "NEW_ONE_TO_ONE_CHAT":
         newOnetoOneChatHandler(ws, parsed);
         break;
-      case "GET_ONE_TO_ONE_HOSTORY":
+      case "GET_ONE_TO_ONE_HISTORY":
         getOneToOneChatHistoryHandler(ws, parsed);
         break;
       case "ONE_TO_ONE_CHAT":

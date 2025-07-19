@@ -14,7 +14,7 @@ const rl = readline.createInterface({
 // Initialize the client
 async function init() {
   username = await question("Enter your username: ");
-  const ws = new WebSocket(`ws://localhost:4000?username=${username}`);
+  const ws = new WebSocket(`ws://localhost:4000/?username=${username}`);
 
   ws.on("open", () => {
     console.log("Connected to chat server!");
@@ -139,7 +139,7 @@ async function mainMenu(ws: WebSocket) {
         );
         ws.send(
           JSON.stringify({
-            type: "GET_ONE_TO_ONE_HOSTORY",
+            type: "GET_ONE_TO_ONE_HISTORY",
             from: username,
             to: friendName,
           })

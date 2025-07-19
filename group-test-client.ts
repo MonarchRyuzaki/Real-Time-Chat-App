@@ -202,7 +202,7 @@ async function mainMenu(ws: WebSocket) {
         );
         ws.send(
           JSON.stringify({
-            type: "GET_ONE_TO_ONE_HOSTORY",
+            type: "GET_ONE_TO_ONE_HISTORY",
             from: username,
             to: friendName,
           })
