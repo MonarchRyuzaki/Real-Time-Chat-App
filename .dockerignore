@@ -1,21 +1,24 @@
-# Ignore benchmark folders and test files
-benchmark/
-*.txt
-*.log
+# Build artifacts and compiled code
+dist/
+build/
+*.tsbuildinfo
 
-# Node modules (will be installed in container)
+# Dependencies (will be installed in container)
 node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
 
 # Environment files (should be passed as Docker env vars)
-.env
-.env.local
-.env.production
-.env.test
+.env*
+!.env.example
 
 # Git files
 .git/
 .gitignore
+.gitattributes
 
 # IDE and editor files
 .vscode/
@@ -23,6 +26,7 @@ npm-debug.log*
 *.swp
 *.swo
 *~
+.editorconfig
 
 # OS generated files
 .DS_Store
@@ -34,17 +38,45 @@ ehthumbs.db
 Thumbs.db
 
 # Docker files themselves
-Dockerfile
+Dockerfile*
 .dockerignore
+docker-compose*.yml
 
 # Documentation
 README.md
 *.md
+docs/
 
-# Test files
+# Test files and development tools
 test/
 tests/
+*.test.ts
 *.test.js
+*.spec.ts
 *.spec.js
+test-client.ts
+group-test-client.ts
+client.ts
 
-dist
+# Logs and temporary files
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+temp/
+
+# Coverage and testing artifacts
+coverage/
+.nyc_output/
+.coverage/
+
+# Benchmark and performance files
+benchmark/
+*.txt
+
+# Development databases (if any)
+*.db
+*.sqlite
+*.sqlite3
