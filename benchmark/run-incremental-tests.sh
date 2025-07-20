@@ -1,19 +1,31 @@
 #!/bin/bash
 
 # Incremental Artillery Load Testing Script
-# Usage: ./run-incremental-tests.sh <phase_name> [start_from_test]
+# Usage: ./run-incremental-tests.sh <phase_name> [start_from_test] [--auto]
 # Example: ./run-incremental-tests.sh "chat_performance"
 # Start from specific test: ./run-incremental-tests.sh "chat_performance" "05_stress"
+# Automatic mode (no prompts): ./run-incremental-tests.sh "chat_performance" "" --auto
 
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 <phase_name> [start_from_test]"
+    echo "Usage: $0 <phase_name> [start_from_test] [--auto]"
     echo "Example: $0 'chat_performance'"
     echo "Start from specific test: $0 'chat_performance' '05_stress'"
+    echo "Automatic mode (no prompts): $0 'chat_performance' '' --auto"
     exit 1
 fi
 
 PHASE_NAME="$1"
 START_FROM="${2:-}"
+AUTO_MODE=false
+
+# Check for --auto flag in any position
+for arg in "$@"; do
+    if [ "$arg" = "--auto" ]; then
+        AUTO_MODE=true
+        break
+    fi
+done
+
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 RESULTS_DIR="./results"
 PHASE_DIR="$RESULTS_DIR/$PHASE_NAME"
@@ -27,6 +39,7 @@ echo "=== Load Testing Session Started ===" > "$LOG_FILE"
 echo "Phase: $PHASE_NAME" >> "$LOG_FILE"
 echo "Timestamp: $TIMESTAMP" >> "$LOG_FILE"
 echo "Start from: ${START_FROM:-'beginning'}" >> "$LOG_FILE"
+echo "Auto Mode: $AUTO_MODE" >> "$LOG_FILE"
 echo "======================================" >> "$LOG_FILE"
 
 # Function to log messages
@@ -52,6 +65,13 @@ check_server_health() {
 # Function to prompt user for continuation
 prompt_continue() {
     local test_level="$1"
+    
+    # Skip prompt if in automatic mode
+    if [ "$AUTO_MODE" = true ]; then
+        log_message "🤖 Auto mode: Continuing with $test_level test"
+        return 0
+    fi
+    
     echo ""
     echo "🎯 Next test: $test_level"
     read -p "Do you want to continue with this test? (y/n): " -n 1 -r
