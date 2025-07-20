@@ -1,0 +1,62 @@
+config:
+  target: 'ws://localhost:4000'
+  processor: './artillery-processor.js'
+  phases:
+    - duration: 120
+      arrivalRate: 50
+      name: 'Warmup Phase'  
+    - duration: 180
+      arrivalRate: 50
+      rampTo: 500
+      name: 'Load Phase'
+    - duration: 300
+      arrivalRate: 500
+      name: 'Steady Phase'
+    - duration: 120
+      arrivalRate: 500
+      rampTo: 1000
+      name: 'Peak Load Phase'
+    - duration: 180
+      arrivalRate: 1000
+      name: 'Maximum Stress Phase'
+scenarios:
+  - name: 'One To One Chat'
+    engine: ws
+    weight: 50
+    flow:
+      - connect: 
+          function: 'connectHandler'
+      - function: 'postConnectionHandler'
+      - function: 'handleOneToOne'
+      - loop:
+        - function: 'preMessageSend'
+        - send:
+            type: 'ONE_TO_ONE_CHAT'
+            from: '{{ username }}'
+            to: '{{ targetFriend }}'
+            content: 'Hello, this is a test message!'
+        - function: 'postMessageSend'
+        count: 50
+      - think: 1
+      - send:
+          type: 'DISCONNECT'
+  - name: 'Group Chat'
+    engine: ws
+    weight: 50
+    flow:
+      - connect: 
+          function: 'connectHandler'
+      - function: 'postConnectionHandler'
+      - function: 'handleGroups'
+      - loop:
+        - function: 'preMessageSend'
+        - send:
+            type: 'GROUP_CHAT'
+            from: '{{ username }}'
+            to: '{{ groupId }}'
+            content: 'Hello, this is a test message!'
+        - function: 'postMessageSend'
+        count: 50
+      - think: 1
+      - send:
+          type: 'DISCONNECT'
