@@ -1,4 +1,4 @@
-const { mockUsers, mockGroups } = require("../src/mockData");
+import { mockUsers, mockGroups } from "../src/mockData";
 
 // Extract all user names from mockUsers
 const allUsers = Object.keys(mockUsers);
