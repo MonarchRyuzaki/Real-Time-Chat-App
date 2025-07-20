@@ -1,4 +1,3 @@
-import { get } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { mockGroups, mockUsers } from "../mockData";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
