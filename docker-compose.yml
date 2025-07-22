@@ -21,6 +21,7 @@ services:
       - ASTRA_DB_CLIENT_ID=${ASTRA_DB_CLIENT_ID}
       - ASTRA_DB_CLIENT_SECRET=${ASTRA_DB_CLIENT_SECRET}
       - ASTRA_DB_TOKEN=${ASTRA_DB_TOKEN}
+      - ASTRA_DB_KEYSPACE=${ASTRA_DB_KEYSPACE}
     volumes:
       - ./logs:/app/logs # Mount logs directory
       - ./secure-connect-my-cassandra-db.zip:/app/secure-connect-my-cassandra-db.zip:ro # Mount Cassandra bundle

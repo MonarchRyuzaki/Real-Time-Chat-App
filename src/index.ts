@@ -17,6 +17,7 @@ async function startServer() {
     logger.info("🔌 Connecting to Cassandra database...");
     await initializeCassandraClient();
     logger.info("✅ Cassandra client connected successfully");
+    // await import("./cassandra/seedData").then(({ seedData }) => seedData());
 
     // const app = createHttpServer();
     // app.listen(PORT, () => {

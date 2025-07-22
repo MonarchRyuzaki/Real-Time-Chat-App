@@ -10,10 +10,10 @@ export async function initializeCassandraClient(): Promise<Client> {
 
   const clientId = process.env.ASTRA_DB_CLIENT_ID;
   const clientSecret = process.env.ASTRA_DB_CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) {
+  const keyspace = process.env.ASTRA_DB_KEYSPACE;
+  if (!clientId || !clientSecret || !keyspace) {
     throw new Error(
-      "Missing required environment variables: ASTRA_DB_CLIENT_ID and ASTRA_DB_CLIENT_SECRET"
+      "Missing required environment variables: ASTRA_DB_CLIENT_ID, ASTRA_DB_CLIENT_SECRET, and ASTRA_DB_KEYSPACE"
     );
   }
 
@@ -28,6 +28,7 @@ export async function initializeCassandraClient(): Promise<Client> {
       username: clientId,
       password: clientSecret,
     },
+    keyspace: keyspace,
   });
 
   await cassandraClient.connect();
