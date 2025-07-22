@@ -80,3 +80,4 @@ benchmark/
 *.db
 *.sqlite
 *.sqlite3
+secure-connect-my-cassandra-db.zip

@@ -15,8 +15,15 @@ services:
     environment:
       - NODE_ENV=production
       - CORS_ORIGIN=*
+      # Astra DB Configuration - these should be set via .env file or passed as secrets
+      - ASTRA_DB_API_ENDPOINT=${ASTRA_DB_API_ENDPOINT}
+      - ASTRA_DB_APPLICATION_TOKEN=${ASTRA_DB_APPLICATION_TOKEN}
+      - ASTRA_DB_CLIENT_ID=${ASTRA_DB_CLIENT_ID}
+      - ASTRA_DB_CLIENT_SECRET=${ASTRA_DB_CLIENT_SECRET}
+      - ASTRA_DB_TOKEN=${ASTRA_DB_TOKEN}
     volumes:
       - ./logs:/app/logs # Mount logs directory
+      - ./secure-connect-my-cassandra-db.zip:/app/secure-connect-my-cassandra-db.zip:ro # Mount Cassandra bundle
     healthcheck:
       test:
         [

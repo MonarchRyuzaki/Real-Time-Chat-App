@@ -55,7 +55,7 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env*
+.env
 
 # next.js build output
 .next
@@ -90,3 +90,4 @@ Thumbs.db
 # Lock files (uncomment if you want to ignore them)
 # package-lock.json
 # yarn.lock
+secure-connect-my-cassandra-db.zip
