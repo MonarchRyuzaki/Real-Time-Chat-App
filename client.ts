@@ -2,7 +2,8 @@ import readline from "readline";
 import WebSocket from "ws";
 
 let username = "";
-let friends: string[] = [];
+let chatIds: string[] = [];
+let friendsMap: Map<string, string> = new Map(); // Maps friend username to chat ID
 let isInitialized = false;
 
 // Create readline interface for non-blocking input
@@ -10,6 +11,13 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+
+// Helper function to generate chat ID from two usernames
+function generateChatId(user1: string, user2: string): string {
+  // Sort usernames to ensure consistent chat ID regardless of order
+  const sortedUsers = [user1, user2].sort();
+  return `${sortedUsers[0]}_${sortedUsers[1]}_chat`;
+}
 
 // Initialize the client
 async function init() {
@@ -25,13 +33,39 @@ async function init() {
 
     switch (message.type) {
       case "INIT_DATA":
-        console.log(
-          `👥 Friends List: ${message.friends.join(", ") || "No friends yet"}`
-        );
-        friends = message.friends;
+        // Handle chat IDs from Cassandra
+        if (message.chatIds && Array.isArray(message.chatIds)) {
+          chatIds = message.chatIds;
+          console.log(
+            `💬 Active Chats: ${
+              chatIds.length > 0 ? chatIds.join(", ") : "No active chats yet"
+            }`
+          );
+
+          // Extract friend usernames from chat IDs
+          friendsMap.clear();
+          chatIds.forEach((chatId) => {
+            // Extract the other user's name from chat_id format: "user1_user2_chat"
+            if (chatId.includes("_chat")) {
+              const parts = chatId.replace("_chat", "").split("_");
+              const otherUser = parts.find((part) => part !== username);
+              if (otherUser) {
+                friendsMap.set(otherUser, chatId);
+              }
+            }
+          });
+
+          const friendsList = Array.from(friendsMap.keys());
+          console.log(
+            `👥 Friends: ${
+              friendsList.length > 0 ? friendsList.join(", ") : "No friends yet"
+            }`
+          );
+        }
+
         if (!isInitialized) {
           isInitialized = true;
-          // Start the menu after receiving initial friends list
+          // Start the menu after receiving initial data
           setImmediate(() => mainMenu(ws));
         }
         break;
@@ -50,8 +84,8 @@ async function init() {
         if (message.messages && message.messages.length > 0) {
           message.messages.forEach((msg: any) => {
             console.log(
-              `  ${msg.from}: ${msg.text} (${new Date(
-                msg.timestamp
+              `  ${msg.message_from}: ${msg.message_text} (${new Date(
+                Number(msg.message_id)
               ).toLocaleString()})`
             );
           });
@@ -65,6 +99,14 @@ async function init() {
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
         console.log(`ℹ️ ${message.msg}`);
+        rl.prompt();
+        break;
+
+      case "ERROR":
+        // Clear current line and display error, then restore prompt
+        readline.clearLine(process.stdout, 0);
+        readline.cursorTo(process.stdout, 0);
+        console.log(`❌ Error: ${message.msg}`);
         rl.prompt();
         break;
 
@@ -104,52 +146,110 @@ async function mainMenu(ws: WebSocket) {
   console.log("\n=== Menu ===");
   console.log("1. Message a Friend");
   console.log("2. View Chat History");
-  console.log("3. Exit");
+  console.log("3. Start New Chat");
+  console.log("4. List Active Chats");
+  console.log("5. Exit");
 
   const choice = await question("Choose an option: ");
 
   switch (choice) {
     case "1":
-      if (friends.length === 0) {
-        console.log("You have no friends yet 😢");
+      if (friendsMap.size === 0) {
+        console.log("You have no active chats yet 😢");
+        console.log("Use option 3 to start a new chat!");
       } else {
+        const friends = Array.from(friendsMap.keys());
         console.log("Your Friends:", friends.join(", "));
         const recipient = await question("Enter friend's username: ");
-        const msg = await question("Enter message: ");
-        ws.send(
-          JSON.stringify({
-            type: "ONE_TO_ONE_CHAT",
-            from: username,
-            to: recipient,
-            content: msg,
-          })
-        );
+
+        if (friendsMap.has(recipient)) {
+          const chatId = friendsMap.get(recipient)!;
+          const msg = await question("Enter message: ");
+          ws.send(
+            JSON.stringify({
+              type: "ONE_TO_ONE_CHAT",
+              from: username,
+              to: recipient,
+              content: msg,
+              chatId: chatId,
+            })
+          );
+        } else {
+          console.log(
+            `❌ No active chat found with ${recipient}. Use option 3 to start a new chat.`
+          );
+        }
       }
-      // Continue the menu loop
       setImmediate(() => mainMenu(ws));
       break;
 
     case "2":
-      if (friends.length === 0) {
-        console.log("You have no friends yet 😢");
+      if (friendsMap.size === 0) {
+        console.log("You have no active chats yet 😢");
       } else {
+        const friends = Array.from(friendsMap.keys());
         console.log("Your Friends:", friends.join(", "));
         const friendName = await question(
           "Enter friend's username to view history: "
         );
-        ws.send(
-          JSON.stringify({
-            type: "GET_ONE_TO_ONE_HISTORY",
-            from: username,
-            to: friendName,
-          })
-        );
+
+        if (friendsMap.has(friendName)) {
+          const chatId = friendsMap.get(friendName)!;
+          ws.send(
+            JSON.stringify({
+              type: "GET_ONE_TO_ONE_HISTORY",
+              from: username,
+              to: friendName,
+              chatId: chatId,
+            })
+          );
+        } else {
+          console.log(`❌ No active chat found with ${friendName}.`);
+        }
       }
-      // Continue the menu loop
       setImmediate(() => mainMenu(ws));
       break;
 
     case "3":
+      const newFriend = await question("Enter username to start new chat: ");
+      const chatId = generateChatId(username, newFriend);
+      const initialMsg = await question("Enter your first message: ");
+
+      // Add to local friends map
+      friendsMap.set(newFriend, chatId);
+      chatIds.push(chatId);
+
+      ws.send(
+        JSON.stringify({
+          type: "ONE_TO_ONE_CHAT",
+          from: username,
+          to: newFriend,
+          content: initialMsg,
+          chatId: chatId,
+        })
+      );
+      console.log(`✅ Started new chat with ${newFriend}`);
+      setImmediate(() => mainMenu(ws));
+      break;
+
+    case "4":
+      console.log("\n📋 Active Chats:");
+      if (chatIds.length === 0) {
+        console.log("  No active chats");
+      } else {
+        chatIds.forEach((chatId, index) => {
+          const friend = Array.from(friendsMap.entries()).find(
+            ([_, id]) => id === chatId
+          )?.[0];
+          console.log(
+            `  ${index + 1}. ${chatId}${friend ? ` (with ${friend})` : ""}`
+          );
+        });
+      }
+      setImmediate(() => mainMenu(ws));
+      break;
+
+    case "5":
       console.log("Goodbye!");
       ws.send(JSON.stringify({ type: "DISCONNECT", username }));
       ws.close();
@@ -158,7 +258,6 @@ async function mainMenu(ws: WebSocket) {
 
     default:
       console.log("Invalid option");
-      // Continue the menu loop
       setImmediate(() => mainMenu(ws));
   }
 }

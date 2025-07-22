@@ -1,4 +1,7 @@
 import { WebSocket, WebSocketServer } from "ws";
+import { getChatIdByUser } from "../cassandra/get_chat_id_by_user";
+import { getOneToOneChatHistory } from "../cassandra/get_one_to_one_chat_history_by_chat_id";
+import { insertOneToOneChat } from "../cassandra/insert_one_to_one_chat";
 import { mockGroups, mockUsers } from "../mockData";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
 
@@ -40,25 +43,44 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
   });
 }
 
-function initChatHandler(ws: WebSocket): void {
+async function initChatHandler(ws: WebSocket): Promise<void> {
   const username = mapSocketToUser.get(ws);
-  ws.send(
-    JSON.stringify({
-      type: "INIT_DATA",
-      friends: username
-        ? mockUsers[username as keyof typeof mockUsers]?.friends || []
-        : [],
-      groups:
-        mockUsers[username as keyof typeof mockUsers]?.groups.map((group) => {
-          return {
-            groupId: group,
-            groupName:
-              mockGroups[group as keyof typeof mockGroups]?.groupName ||
-              "Unknown Group",
-          };
-        }) || [],
-    })
-  );
+  if (!username) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: "You must be logged in to use the chat.",
+      })
+    );
+    return;
+  }
+
+  try {
+    const chatIds = await getChatIdByUser(username);
+    ws.send(
+      JSON.stringify({
+        type: "INIT_DATA",
+        chatIds: chatIds,
+        groups:
+          mockUsers[username as keyof typeof mockUsers]?.groups.map((group) => {
+            return {
+              groupId: group,
+              groupName:
+                mockGroups[group as keyof typeof mockGroups]?.groupName ||
+                "Unknown Group",
+            };
+          }) || [],
+      })
+    );
+  } catch (error) {
+    console.error("Error fetching chat IDs for user:", username, error);
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: "Failed to load chat data.",
+      })
+    );
+  }
 }
 
 function newOnetoOneChatHandler(
@@ -94,31 +116,36 @@ function newOnetoOneChatHandler(
   }
 }
 
-function getOneToOneChatHistoryHandler(
+async function getOneToOneChatHistoryHandler(
   ws: WebSocket,
-  parsed: { from: string; to: string }
-): void {
+  parsed: { from: string; to: string; chatId: string }
+): Promise<void> {
   const fromUsername = parsed.from;
   const toUsername = parsed.to;
+  const chatId = parsed.chatId;
+  const chatHistory = await getOneToOneChatHistory(chatId);
   ws.send(
     JSON.stringify({
       type: "ONE_TO_ONE_CHAT_HISTORY",
-      messages:
-        mockUsers[fromUsername as keyof typeof mockUsers]?.messages[
-          toUsername as keyof (typeof mockUsers)[keyof typeof mockUsers]["messages"]
-        ] || [],
+      messages: chatHistory,
     })
   );
 }
 
 function oneToOneChatHandler(
   ws: WebSocket,
-  parsed: { from: string; to: string; content: string }
+  parsed: { from: string; to: string; content: string; chatId: string }
 ): void {
   const fromUsername = parsed.from;
   const toUsername = parsed.to;
   const messageContent = parsed.content;
-
+  const chatId = parsed.chatId;
+  const saveMessageToCassandra = insertOneToOneChat(
+    chatId,
+    fromUsername,
+    toUsername,
+    messageContent
+  );
   if (mapUserToSocket.has(toUsername)) {
     const recipientSocket = mapUserToSocket.get(toUsername);
     if (recipientSocket) {
@@ -127,6 +154,7 @@ function oneToOneChatHandler(
           type: "MESSAGE",
           from: fromUsername,
           content: messageContent,
+          chatId: chatId,
         })
       );
     }
