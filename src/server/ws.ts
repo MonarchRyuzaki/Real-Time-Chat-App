@@ -77,7 +77,7 @@ export function createWebSocketServer({
       handler(ws, wss);
     } catch (e) {
       console.error("Error in WebSocket handler:", e);
-      ws.close();
+      ws.terminate();
     }
   });
   console.log(`WebSocket server is running on ws://localhost:${port}`);
