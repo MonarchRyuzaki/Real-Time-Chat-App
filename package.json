@@ -15,9 +15,9 @@
     "docker:build": "docker compose build && docker image prune -f",
     "docker:up": "docker compose up -d --build && docker image prune -f",
     "docker:down": "docker compose down",
+    "db:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
     "db:generate": "prisma generate --schema=src/prisma/schema.prisma",
     "db:push": "prisma db push --schema=src/prisma/schema.prisma",
-    "db:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
     "db:studio": "prisma studio --schema=src/prisma/schema.prisma",
     "db:seed": "ts-node src/prisma/seed.ts"
   },
