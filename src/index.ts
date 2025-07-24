@@ -24,14 +24,14 @@ async function startServer() {
     await initializePrismaClient();
     logger.info("✅ Prisma client connected successfully");
 
-    // const app = createHttpServer();
-    // app.listen(PORT, () => {
-    //   logger.info(`🚀 Server is running on port ${PORT}`);
-    //   logger.info(
-    //     `🏥 Health check available at http://localhost:${PORT}/health`
-    //   );
-    //   logger.info(`📚 API routes available at http://localhost:${PORT}/api`);
-    // });
+    const app = createHttpServer();
+    app.listen(PORT, () => {
+      logger.info(`🚀 Server is running on port ${PORT}`);
+      logger.info(
+        `🏥 Health check available at http://localhost:${PORT}/health`
+      );
+      logger.info(`📚 API routes available at http://localhost:${PORT}/api`);
+    });
     createWebSocketServer({ port: 4000, handler: chatHandler });
 
     process.on("SIGTERM", gracefulShutdown);

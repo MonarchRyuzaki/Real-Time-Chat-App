@@ -4,7 +4,7 @@ import {
   globalErrorHandler,
   notFoundHandler,
 } from "../middlewares/errorHandler";
-// import routes from "../routes";
+import routes from "../routes";
 import { morganMiddleware } from "../utils/logger";
 
 export function createHttpServer() {
@@ -27,7 +27,7 @@ export function createHttpServer() {
   });
 
   // API routes
-//   app.use("/api", routes);
+  app.use("/api", routes);
 
   // Error handlers
   app.use(notFoundHandler);
