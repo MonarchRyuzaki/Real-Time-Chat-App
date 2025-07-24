@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  username        String            @id
+  password        String
+  friendships     Friendship[]      @relation("UserFriendships")
+  friendOf        Friendship[]      @relation("FriendUserFriendships")
+  groupMembership GroupMembership[]
+  createdGroups   Group[]           @relation("GroupCreator")
+}
+
+model Friendship {
+  id        Int    @id @default(autoincrement())
+  user      String
+  userRel   User   @relation("UserFriendships", fields: [user], references: [username])
+  friend    String
+  friendRel User   @relation("FriendUserFriendships", fields: [friend], references: [username])
+
+  @@unique([user, friend])
+}
+
+model Group {
+  groupId   String            @id
+  groupName String
+  createdBy String
+  creator   User              @relation("GroupCreator", fields: [createdBy], references: [username])
+  members   GroupMembership[]
+}
+
+model GroupMembership {
+  id       Int    @id @default(autoincrement())
+  user     String
+  userRel  User   @relation(fields: [user], references: [username])
+  group    String
+  groupRel Group  @relation(fields: [group], references: [groupId])
+
+  @@unique([user, group])
+}
