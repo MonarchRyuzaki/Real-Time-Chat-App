@@ -67,7 +67,7 @@ export async function login(req: Request, res: Response): Promise<void> {
       { username: user.username },
       process.env.JWT_SECRET!,
       {
-        expiresIn: "7d",    
+        expiresIn: "7d",
       }
     );
 
@@ -82,4 +82,13 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function logout(req: Request, res: Response) {}
+export async function logout(req: Request, res: Response): Promise<void> {
+  try {
+    res.status(200).json({
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
