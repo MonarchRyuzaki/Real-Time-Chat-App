@@ -5,6 +5,7 @@ import {
   closeCassandraClient,
   initializeCassandraClient,
 } from "./services/cassandra";
+import { closePrismaClient, initializePrismaClient } from "./services/prisma";
 import { chatHandler } from "./sockets/chatHandler";
 import { logger } from "./utils/logger";
 dotenv.config();
@@ -17,7 +18,11 @@ async function startServer() {
     logger.info("🔌 Connecting to Cassandra database...");
     await initializeCassandraClient();
     logger.info("✅ Cassandra client connected successfully");
-    // await import("./cassandra/seedData").then(({ seedData }) => seedData());
+
+    // Initialize Prisma client
+    logger.info("🔌 Connecting to Prisma database...");
+    await initializePrismaClient();
+    logger.info("✅ Prisma client connected successfully");
 
     // const app = createHttpServer();
     // app.listen(PORT, () => {
@@ -38,15 +43,17 @@ async function startServer() {
 }
 
 async function gracefulShutdown() {
-  logger.info("Received shutdown signal, closing server...");
+  logger.info("🛑 Shutting down server gracefully...");
+
   try {
-    logger.info("🔌 Closing Cassandra connection...");
     await closeCassandraClient();
-    logger.info("✅ Cassandra connection closed");
+    await closePrismaClient();
+    logger.info("✅ All database connections closed");
+    process.exit(0);
   } catch (error) {
-    logger.error("Error closing Cassandra connection:", error);
+    logger.error("Error during shutdown:", error);
+    process.exit(1);
   }
-  process.exit(0);
 }
 
 startServer();
