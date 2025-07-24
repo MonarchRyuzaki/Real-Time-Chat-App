@@ -1,7 +1,19 @@
 import readline from "readline";
 import WebSocket from "ws";
 
+// Type definitions for API responses
+interface AuthResponse {
+  token?: string;
+  error?: string;
+}
+
+interface RegisterResponse {
+  message?: string;
+  error?: string;
+}
+
 let username = "";
+let authToken = "";
 let chatIds: string[] = [];
 let friendsMap: Map<string, string> = new Map(); // Maps friend username to chat ID
 let isInitialized = false;
@@ -19,13 +31,122 @@ function generateChatId(user1: string, user2: string): string {
   return `${sortedUsers[0]}_${sortedUsers[1]}_chat`;
 }
 
+// Authentication functions
+async function registerUser(
+  username: string,
+  password: string
+): Promise<boolean> {
+  try {
+    const response = await fetch("http://localhost:3000/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = (await response.json()) as RegisterResponse;
+
+    if (response.ok) {
+      console.log("✅ Registration successful!");
+      return true;
+    } else {
+      console.log(`❌ Registration failed: ${data.error}`);
+      return false;
+    }
+  } catch (error) {
+    console.error("❌ Registration error:", error);
+    return false;
+  }
+}
+
+async function loginUser(
+  username: string,
+  password: string
+): Promise<string | null> {
+  try {
+    const response = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = (await response.json()) as AuthResponse;
+
+    if (response.ok) {
+      console.log("✅ Login successful!");
+      return data.token || null;
+    } else {
+      console.log(`❌ Login failed: ${data.error}`);
+      return null;
+    }
+  } catch (error) {
+    console.error("❌ Login error:", error);
+    return null;
+  }
+}
+
+async function authenticateUser(): Promise<void> {
+  console.log("\n=== Authentication Required ===");
+  console.log("1. Login");
+  console.log("2. Register");
+
+  const choice = await question("Choose an option (1 or 2): ");
+
+  const inputUsername = await question("Enter username: ");
+  const password = await question("Enter password: ");
+
+  if (choice === "1") {
+    // Login
+    const token = await loginUser(inputUsername, password);
+    if (token) {
+      username = inputUsername;
+      authToken = token;
+    } else {
+      console.log("❌ Login failed. Please try again.");
+      await authenticateUser();
+    }
+  } else if (choice === "2") {
+    // Register
+    const success = await registerUser(inputUsername, password);
+    if (success) {
+      console.log("✅ Registration complete! Now please login.");
+      await authenticateUser();
+    } else {
+      console.log("❌ Registration failed. Please try again.");
+      await authenticateUser();
+    }
+  } else {
+    console.log("❌ Invalid choice. Please try again.");
+    await authenticateUser();
+  }
+}
+
 // Initialize the client
 async function init() {
-  username = await question("Enter your username: ");
-  const ws = new WebSocket(`ws://localhost:4000/?username=${username}`);
+  console.log("🚀 Welcome to Real-Time Chat App!");
+
+  // Authenticate user first
+  await authenticateUser();
+
+  if (!authToken) {
+    console.log("❌ Authentication failed. Exiting...");
+    process.exit(1);
+  }
+
+  console.log(`\n📡 Connecting to WebSocket server as ${username}...`);
+
+  // Connect to WebSocket with JWT token
+  const ws = new WebSocket(`ws://localhost:4000/?username=${username}`, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
 
   ws.on("open", () => {
-    console.log("Connected to chat server!");
+    console.log("✅ Connected to chat server!");
   });
 
   ws.on("message", (data) => {
@@ -123,6 +244,12 @@ async function init() {
 
   ws.on("error", (error) => {
     console.error("WebSocket error:", error);
+    if (
+      error.message.includes("401") ||
+      error.message.includes("Unauthorized")
+    ) {
+      console.log("❌ Authentication failed. Please check your credentials.");
+    }
     rl.close();
     process.exit(1);
   });
