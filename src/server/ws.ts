@@ -1,9 +1,42 @@
 import { IncomingMessage } from "http";
-import { URL } from "url";
 import { WebSocket, WebSocketServer } from "ws";
+import { verifyToken } from "../middlewares/auth";
 
 export const mapUserToSocket = new Map<string, WebSocket>();
 export const mapSocketToUser = new Map<WebSocket, string>();
+
+interface AuthenticatedIncomingMessage extends IncomingMessage {
+  username?: string;
+}
+
+interface AuthResult {
+  success: boolean;
+  username?: string;
+  error?: string | null;
+}
+
+// Adapter function to use existing HTTP middleware for WebSocket authentication
+function verifyWebSocketToken(req: IncomingMessage): AuthResult {
+  let authResult: AuthResult = {
+    success: false,
+    username: undefined,
+    error: null,
+  };
+
+  const mockRes = {
+    status: (code: number) => ({
+      json: (data: any) => {
+        authResult = { success: false, error: data.error || null };
+      },
+    }),
+  };
+
+  const mockNext = () => {
+    authResult = { success: true, username: (req as any).username };
+  };
+  verifyToken(req as any, mockRes as any, mockNext);
+  return authResult;
+}
 
 export function createWebSocketServer({
   port,
@@ -12,33 +45,34 @@ export function createWebSocketServer({
   port: number;
   handler: (ws: WebSocket, req: WebSocketServer) => void;
 }) {
-  const wss = new WebSocketServer({ port });
-  wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    console.log(`New connection`);
-    console.log(`Request URL: ${req.url}`);
-    // Parse URL properly to extract username
-    let username: string | null = null;
-    if (req.url) {
-      try {
-        const url = new URL(req.url, `ws://localhost:${port}`);
-        username = url.searchParams.get("username");
-        console.log(`Parsed username: ${username}`);
-      } catch (e) {
-        console.error("Error parsing URL:", e);
+  const wss = new WebSocketServer({
+    port,
+    verifyClient: (info: { origin: any; req: IncomingMessage; }) => {
+      console.log(`WebSocket connection attempt from ${info.origin}`);
+
+      // Reuse existing JWT verification middleware
+      const authResult = verifyWebSocketToken(info.req);
+
+      if (!authResult.success) {
+        console.error(`WebSocket JWT verification failed: ${authResult.error}`);
+        return false;
       }
-    }
 
-    if (!username) {
-      console.error("No username provided in the connection request.");
-      ws.close();
-      return;
-    }
+      console.log(`JWT verified for user: ${authResult.username}`);
 
-    console.log(`User ${username} connected`);
+      (info.req as AuthenticatedIncomingMessage).username = authResult.username;
+
+      return true;
+    },
+  });
+
+  wss.on("connection", (ws: WebSocket, req: AuthenticatedIncomingMessage) => {
+    const username = req.username!; 
+
+    console.log(`User ${username} connected via authenticated WebSocket`);
     mapUserToSocket.set(username, ws);
     mapSocketToUser.set(ws, username);
 
-    // Take Care of authentication here
     try {
       handler(ws, wss);
     } catch (e) {
