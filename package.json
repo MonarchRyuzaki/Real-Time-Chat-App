@@ -14,7 +14,12 @@
     "group-test-client": "ts-node group-test-client.ts",
     "docker:build": "docker compose build && docker image prune -f",
     "docker:up": "docker compose up -d --build && docker image prune -f",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "db:generate": "prisma generate --schema=src/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=src/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=src/prisma/schema.prisma",
+    "db:seed": "ts-node src/prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +43,7 @@
     "@types/node": "^24.0.13",
     "@types/ws": "^8.5.13",
     "nodemon": "^3.1.7",
+    "prisma": "^6.12.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
