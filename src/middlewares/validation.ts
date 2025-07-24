@@ -34,3 +34,22 @@ export const validateRegister = (
 
   next();
 };
+
+export const validateLogin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { username, password } = req.body;
+
+  // Check if required fields are provided
+  if (!username || !password) {
+    res.status(400).json({ error: "Username and password are required" });
+    return;
+  }
+
+  // Trim username and add to request body
+  req.body.username = username.trim();
+
+  next();
+};
