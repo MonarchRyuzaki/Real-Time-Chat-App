@@ -15,6 +15,13 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+// Helper function to generate chat ID from two usernames
+function generateChatId(user1: string, user2: string): string {
+  // Sort usernames to ensure consistent chat ID regardless of order
+  const sortedUsers = [user1, user2].sort();
+  return `${sortedUsers[0]}_${sortedUsers[1]}_chat`;
+}
+
 // Helper function to promisify readline question
 function question(prompt: string): Promise<string> {
   return new Promise((resolve) => {
@@ -66,6 +73,19 @@ function createClient(username: string): Promise<TestClient> {
             });
           } else {
             console.log("  No previous messages");
+          }
+          break;
+
+        case "NEW_ONE_TO_ONE_CHAT_AP":
+          if (message.from) {
+            console.log(
+              `🤝 [${username}] Chat established with ${message.from}`
+            );
+            if (!client.friends.includes(message.from)) {
+              client.friends.push(message.from);
+            }
+          } else if (message.msg) {
+            console.log(`✅ [${username}] ${message.msg}`);
           }
           break;
 
@@ -130,12 +150,14 @@ async function testMenu() {
 
       const senderClient = clients.find((c) => c.username === sender);
       if (senderClient) {
+        const chatId = generateChatId(sender, recipient);
         senderClient.ws.send(
           JSON.stringify({
             type: "ONE_TO_ONE_CHAT",
             from: sender,
             to: recipient,
             content: message,
+            chatId: chatId,
           })
         );
         console.log(`📤 Message sent from ${sender} to ${recipient}`);
@@ -158,11 +180,13 @@ async function testMenu() {
 
       const requesterClient = clients.find((c) => c.username === requester);
       if (requesterClient) {
+        const chatId = generateChatId(requester, friendName);
         requesterClient.ws.send(
           JSON.stringify({
             type: "GET_ONE_TO_ONE_HISTORY",
             from: requester,
             to: friendName,
+            chatId: chatId,
           })
         );
       } else {
@@ -224,12 +248,14 @@ async function testMenu() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Alice sends message to Bob
+        const chatId = generateChatId("alice", "bob");
         alice.ws.send(
           JSON.stringify({
             type: "ONE_TO_ONE_CHAT",
             from: "alice",
             to: "bob",
             content: "Hey Bob! This is a test message from the test client!",
+            chatId: chatId,
           })
         );
 
@@ -242,6 +268,7 @@ async function testMenu() {
             type: "GET_ONE_TO_ONE_HISTORY",
             from: "alice",
             to: "bob",
+            chatId: chatId,
           })
         );
       } catch (error) {

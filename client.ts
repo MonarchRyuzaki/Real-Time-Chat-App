@@ -195,13 +195,15 @@ async function init() {
         // Clear current line and display message, then restore prompt
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
-        console.log(`\n📩 ${message.from}: ${message.content}`);
+        console.log(
+          `\n📩 [ONE_TO_ONE_CHAT] ${message.from}: ${message.content}`
+        );
         // If we're currently in a prompt, redisplay it
         rl.prompt();
         break;
 
       case "ONE_TO_ONE_CHAT_HISTORY":
-        console.log(`\n📜 Chat History:`);
+        console.log(`\n📜 [GET_ONE_TO_ONE_HISTORY] Chat History:`);
         if (message.messages && message.messages.length > 0) {
           message.messages.forEach((msg: any) => {
             console.log(
@@ -215,11 +217,30 @@ async function init() {
         }
         break;
 
+      case "NEW_ONE_TO_ONE_CHAT_AP":
+        if (message.from) {
+          console.log(
+            `\n🤝 [NEW_ONE_TO_ONE_CHAT] ${message.from} wants to start a chat with you!`
+          );
+          console.log(`✅ Chat established with ${message.from}`);
+
+          // Generate chat ID and add to local maps
+          const chatId = generateChatId(username, message.from);
+          friendsMap.set(message.from, chatId);
+          if (!chatIds.includes(chatId)) {
+            chatIds.push(chatId);
+          }
+        } else if (message.msg) {
+          console.log(`\n✅ [NEW_ONE_TO_ONE_CHAT] ${message.msg}`);
+        }
+        rl.prompt();
+        break;
+
       case "INFO":
         // Clear current line and display info, then restore prompt
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
-        console.log(`ℹ️ ${message.msg}`);
+        console.log(`ℹ️ [INFO] ${message.msg}`);
         rl.prompt();
         break;
 
@@ -227,7 +248,7 @@ async function init() {
         // Clear current line and display error, then restore prompt
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
-        console.log(`❌ Error: ${message.msg}`);
+        console.log(`❌ [ERROR] ${message.msg}`);
         rl.prompt();
         break;
 
@@ -339,23 +360,17 @@ async function mainMenu(ws: WebSocket) {
 
     case "3":
       const newFriend = await question("Enter username to start new chat: ");
-      const chatId = generateChatId(username, newFriend);
-      const initialMsg = await question("Enter your first message: ");
 
-      // Add to local friends map
-      friendsMap.set(newFriend, chatId);
-      chatIds.push(chatId);
-
+      // First establish the friendship/chat relationship
       ws.send(
         JSON.stringify({
-          type: "ONE_TO_ONE_CHAT",
+          type: "NEW_ONE_TO_ONE_CHAT",
           from: username,
           to: newFriend,
-          content: initialMsg,
-          chatId: chatId,
         })
       );
-      console.log(`✅ Started new chat with ${newFriend}`);
+
+      console.log(`🔄 Sending chat request to ${newFriend}...`);
       setImmediate(() => mainMenu(ws));
       break;
 

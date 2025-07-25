@@ -4,6 +4,7 @@ import WebSocket from "ws";
 let username = "";
 let friends: string[] = [];
 let groups: Array<{ groupId: string; groupName: string }> = [];
+let friendsMap: Map<string, string> = new Map(); // Maps friend username to chat ID
 let isInitialized = false;
 
 // Create readline interface for non-blocking input
@@ -11,6 +12,13 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+
+// Helper function to generate chat ID from two usernames
+function generateChatId(user1: string, user2: string): string {
+  // Sort usernames to ensure consistent chat ID regardless of order
+  const sortedUsers = [user1, user2].sort();
+  return `${sortedUsers[0]}_${sortedUsers[1]}_chat`;
+}
 
 // Initialize the client
 async function init() {
@@ -113,6 +121,21 @@ async function init() {
         }
         break;
 
+      case "NEW_ONE_TO_ONE_CHAT_AP":
+        if (message.from) {
+          console.log(`\n🤝 ${message.from} wants to start a chat with you!`);
+          console.log(`✅ Chat established with ${message.from}`);
+
+          // Add to friends list if not already there
+          if (!friends.includes(message.from)) {
+            friends.push(message.from);
+          }
+        } else if (message.msg) {
+          console.log(`\n✅ ${message.msg}`);
+        }
+        rl.prompt();
+        break;
+
       case "INFO":
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
@@ -163,12 +186,13 @@ async function mainMenu(ws: WebSocket) {
   console.log("\n=== Group Chat Menu ===");
   console.log("1. Send Direct Message");
   console.log("2. View Direct Chat History");
-  console.log("3. Create Group Chat");
-  console.log("4. Join Group Chat");
-  console.log("5. Send Group Message");
-  console.log("6. View Group Chat History");
-  console.log("7. List My Groups");
-  console.log("8. Exit");
+  console.log("3. Start New Chat");
+  console.log("4. Create Group Chat");
+  console.log("5. Join Group Chat");
+  console.log("6. Send Group Message");
+  console.log("7. View Group Chat History");
+  console.log("8. List My Groups");
+  console.log("9. Exit");
 
   const choice = await question("Choose an option: ");
 
@@ -176,18 +200,28 @@ async function mainMenu(ws: WebSocket) {
     case "1":
       if (friends.length === 0) {
         console.log("You have no friends yet 😢");
+        console.log("Use option 3 to start a new chat!");
       } else {
         console.log("Your Friends:", friends.join(", "));
         const recipient = await question("Enter friend's username: ");
-        const msg = await question("Enter message: ");
-        ws.send(
-          JSON.stringify({
-            type: "ONE_TO_ONE_CHAT",
-            from: username,
-            to: recipient,
-            content: msg,
-          })
-        );
+
+        if (friends.includes(recipient)) {
+          const chatId = generateChatId(username, recipient);
+          const msg = await question("Enter message: ");
+          ws.send(
+            JSON.stringify({
+              type: "ONE_TO_ONE_CHAT",
+              from: username,
+              to: recipient,
+              content: msg,
+              chatId: chatId,
+            })
+          );
+        } else {
+          console.log(
+            `❌ No friendship found with ${recipient}. Use option 3 to start a new chat.`
+          );
+        }
       }
       setImmediate(() => mainMenu(ws));
       break;
@@ -200,18 +234,41 @@ async function mainMenu(ws: WebSocket) {
         const friendName = await question(
           "Enter friend's username to view history: "
         );
-        ws.send(
-          JSON.stringify({
-            type: "GET_ONE_TO_ONE_HISTORY",
-            from: username,
-            to: friendName,
-          })
-        );
+
+        if (friends.includes(friendName)) {
+          const chatId = generateChatId(username, friendName);
+          ws.send(
+            JSON.stringify({
+              type: "GET_ONE_TO_ONE_HISTORY",
+              from: username,
+              to: friendName,
+              chatId: chatId,
+            })
+          );
+        } else {
+          console.log(`❌ No friendship found with ${friendName}.`);
+        }
       }
       setImmediate(() => mainMenu(ws));
       break;
 
     case "3":
+      const newFriend = await question("Enter username to start new chat: ");
+
+      // First establish the friendship/chat relationship
+      ws.send(
+        JSON.stringify({
+          type: "NEW_ONE_TO_ONE_CHAT",
+          from: username,
+          to: newFriend,
+        })
+      );
+
+      console.log(`🔄 Sending chat request to ${newFriend}...`);
+      setImmediate(() => mainMenu(ws));
+      break;
+
+    case "4":
       const groupName = await question("Enter group name: ");
       ws.send(
         JSON.stringify({
@@ -222,7 +279,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "4":
+    case "5":
       const groupId = await question("Enter group ID to join: ");
       ws.send(
         JSON.stringify({
@@ -233,7 +290,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "5":
+    case "6":
       if (groups.length === 0) {
         console.log("You are not in any groups yet 😢");
         console.log("Available groups to join: group1, group2, group3");
@@ -256,7 +313,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "6":
+    case "7":
       if (groups.length === 0) {
         console.log("You are not in any groups yet 😢");
         console.log("Available groups to join: group1, group2, group3");
@@ -276,7 +333,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "7":
+    case "8":
       console.log("\n📋 Your Groups:");
       if (groups.length === 0) {
         console.log("  You are not in any groups yet 😢");
@@ -289,7 +346,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "8":
+    case "9":
       console.log("Goodbye!");
       ws.send(JSON.stringify({ type: "DISCONNECT", username }));
       ws.close();
