@@ -247,19 +247,38 @@ function disconnectHandler(ws: WebSocket): void {
   }
 }
 
-function createGroupChatHandler(
+async function createGroupChatHandler(
   ws: WebSocket,
-  parsed: { type: string; groupName: string }
+  parsed: { type: string; groupName: string; by: string }
 ) {
   const groupName = parsed.groupName;
+  const createdBy = parsed.by;
   const groupChatId = `group-${Date.now()}`;
-  (mockGroups as any)[groupChatId] = {
-    groupChatId,
-    groupName,
-    createdBy: mapSocketToUser.get(ws) || "unknown",
-    members: [],
-    messages: [],
-  };
+  if (!groupName || !createdBy) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: "Group name and creator are required.",
+      })
+    );
+    return;
+  }
+  if (!(await userExists(createdBy))) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `User ${createdBy} does not exist.`,
+      })
+    );
+    return;
+  }
+  await getPrismaClient().group.create({
+    data: {
+      groupId: groupChatId,
+      groupName: groupName,
+      createdBy: createdBy,
+    }
+  });
 
   ws.send(
     JSON.stringify({
