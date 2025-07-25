@@ -230,6 +230,18 @@ async function init() {
           if (!chatIds.includes(chatId)) {
             chatIds.push(chatId);
           }
+        } else if (message.to) {
+          // Sender: confirmation that chat request was sent
+          console.log(
+            `\n✅ [NEW_ONE_TO_ONE_CHAT] Chat established with ${message.to}`
+          );
+
+          // Generate chat ID and add to local maps
+          const chatId = generateChatId(username, message.to);
+          friendsMap.set(message.to, chatId);
+          if (!chatIds.includes(chatId)) {
+            chatIds.push(chatId);
+          }
         } else if (message.msg) {
           console.log(`\n✅ [NEW_ONE_TO_ONE_CHAT] ${message.msg}`);
         }

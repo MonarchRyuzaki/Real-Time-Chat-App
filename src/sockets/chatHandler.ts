@@ -169,6 +169,7 @@ async function newOnetoOneChatHandler(
       ws.send(
         JSON.stringify({
           type: "NEW_ONE_TO_ONE_CHAT_AP",
+          to: toUsername,
           msg: `Chat request sent to ${toUsername}.`,
         })
       );
