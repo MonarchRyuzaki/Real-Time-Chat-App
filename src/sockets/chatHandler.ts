@@ -3,6 +3,7 @@ import { getChatIdByUser } from "../cassandra/get_chat_id_by_user";
 import { getOneToOneChatHistory } from "../cassandra/get_one_to_one_chat_history_by_chat_id";
 import { insertOneToOneChat } from "../cassandra/insert_one_to_one_chat";
 import { mockGroups, mockUsers } from "../mockData";
+import { groupExists } from "../prisma/groupExists";
 import { userExists } from "../prisma/userExists";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
 import { getPrismaClient } from "../services/prisma";
@@ -277,7 +278,7 @@ async function createGroupChatHandler(
       groupId: groupChatId,
       groupName: groupName,
       createdBy: createdBy,
-    }
+    },
   });
 
   ws.send(
@@ -288,30 +289,89 @@ async function createGroupChatHandler(
   );
 }
 // group-1753413848303
-function joinGroupChatHandler(
+async function joinGroupChatHandler(
   ws: WebSocket,
-  parsed: { type: string; groupId: string }
+  parsed: { type: string; groupId: string; username: string }
 ) {
   const groupId = parsed.groupId;
-  if (groupId in mockGroups) {
-    const username = mapSocketToUser.get(ws);
-    if (username) {
-      (mockGroups as any)[groupId].members.push(username);
-      ws.send(
-        JSON.stringify({
-          type: "GROUP_CHAT_JOINED",
-          groupId,
-          groupName: (mockGroups as any)[groupId].groupName,
-        })
-      );
-    } else {
-      ws.send(
-        JSON.stringify({
-          type: "ERROR",
-          msg: "You must be logged in to join a group chat.",
-        })
-      );
+  const username = parsed.username;
+  if (!groupId || !username) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: "Group ID and username are required.",
+      })
+    );
+    return;
+  }
+  if (!(await userExists(username))) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `User ${username} does not exist.`,
+      })
+    );
+    return;
+  }
+  const group = await groupExists(groupId);
+  if (!group) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `Group chat with ID ${groupId} does not exist.`,
+      })
+    );
+    return;
+  }
+  const prisma = getPrismaClient();
+  const alreadyMember = await prisma.groupMembership.findFirst({
+    where: {
+      group: groupId,
+      user: username,
     }
+  });
+  if (alreadyMember) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `User ${username} is already a member of the group.`,
+      })
+    );
+    return;
+  }
+  await prisma.groupMembership.create({
+    data: {
+      group: groupId,
+      user: username,
+    },
+  });
+  ws.send(
+    JSON.stringify({
+      type: "SUCCESS",
+      msg: `User ${username} has joined the group.`,
+    })
+  );
+  const groupChat = await prisma.group.findUnique({
+    where: {
+      groupId: groupId,
+    },
+    include: {
+      members: true,
+    }
+  });
+  if (groupChat) {
+    groupChat.members.forEach((member) => {
+      const memberSocket = mapUserToSocket.get(member.user);
+      if (memberSocket) {
+        memberSocket.send(
+          JSON.stringify({
+            type: "GROUP_MEMBER_JOINED",
+            groupId: groupId,
+            username: username,
+          })
+        );
+      }
+    });
   }
 }
 
