@@ -110,7 +110,7 @@ async function newOnetoOneChatHandler(
     );
     return;
   }
-  if (!userExists(toUsername)) {
+  if (!(await userExists(toUsername))) {
     ws.send(
       JSON.stringify({
         type: "ERROR",
@@ -119,7 +119,7 @@ async function newOnetoOneChatHandler(
     );
     return;
   }
-  if (!userExists(fromUsername)) {
+  if (!(await userExists(fromUsername))) {
     ws.send(
       JSON.stringify({
         type: "ERROR",
