@@ -3,7 +3,9 @@ import { getChatIdByUser } from "../cassandra/get_chat_id_by_user";
 import { getOneToOneChatHistory } from "../cassandra/get_one_to_one_chat_history_by_chat_id";
 import { insertOneToOneChat } from "../cassandra/insert_one_to_one_chat";
 import { mockGroups, mockUsers } from "../mockData";
+import { userExists } from "../prisma/userExists";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
+import { getPrismaClient } from "../services/prisma";
 
 export function chatHandler(ws: WebSocket, wss: WebSocketServer) {
   initChatHandler(ws);
@@ -83,13 +85,78 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
   }
 }
 
-function newOnetoOneChatHandler(
+async function newOnetoOneChatHandler(
   ws: WebSocket,
   parsed: { type: string; from: string; to: string }
-): void {
+): Promise<void> {
   const fromUsername = parsed.from;
   const toUsername = parsed.to;
-
+  const prisma = getPrismaClient();
+  if (!toUsername || !fromUsername) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: "Both 'from' and 'to' usernames are required.",
+      })
+    );
+    return;
+  }
+  if (fromUsername === toUsername) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: "You cannot start a chat with yourself.",
+      })
+    );
+    return;
+  }
+  if (!userExists(toUsername)) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `User ${toUsername} does not exist.`,
+      })
+    );
+    return;
+  }
+  if (!userExists(fromUsername)) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `User ${fromUsername} does not exist.`,
+      })
+    );
+    return;
+  }
+  const chat = await prisma.friendship.findFirst({
+    where: {
+      OR: [
+        { user: fromUsername, friend: toUsername },
+        { user: toUsername, friend: fromUsername },
+      ],
+    },
+  });
+  if (chat) {
+    ws.send(
+      JSON.stringify({
+        type: "ERROR",
+        msg: `Chat with ${toUsername} already exists.`,
+      })
+    );
+    return;
+  }
+  await prisma.friendship.create({
+    data: {
+      user: fromUsername,
+      friend: toUsername,
+    },
+  });
+  await prisma.friendship.create({
+    data: {
+      user: toUsername,
+      friend: fromUsername,
+    },
+  });
   if (mapUserToSocket.has(toUsername)) {
     const recipientSocket = mapUserToSocket.get(toUsername);
     if (recipientSocket) {
