@@ -162,6 +162,13 @@ async function connectToWebSocket(): Promise<void> {
         rl.prompt();
         break;
 
+      case "SUCCESS":
+        readline.clearLine(process.stdout, 0);
+        readline.cursorTo(process.stdout, 0);
+        console.log(`\n✅ ${message.msg}`);
+        rl.prompt();
+        break;
+
       case "GROUP_CHAT_JOINED":
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
@@ -174,6 +181,15 @@ async function connectToWebSocket(): Promise<void> {
             groupName: message.groupName,
           });
         }
+        rl.prompt();
+        break;
+
+      case "GROUP_MEMBER_JOINED":
+        readline.clearLine(process.stdout, 0);
+        readline.cursorTo(process.stdout, 0);
+        console.log(
+          `\n👥 ${message.username} joined group: ${message.groupId}`
+        );
         rl.prompt();
         break;
 
@@ -268,6 +284,7 @@ async function mainMenu(ws: WebSocket) {
         JSON.stringify({
           type: "JOIN_GROUP_CHAT",
           groupId: groupId,
+          username: username,
         })
       );
       setImmediate(() => mainMenu(ws));
