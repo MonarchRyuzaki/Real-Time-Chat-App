@@ -2,9 +2,8 @@ import readline from "readline";
 import WebSocket from "ws";
 
 let username = "";
-let friends: string[] = [];
+let authToken = "";
 let groups: Array<{ groupId: string; groupName: string }> = [];
-let friendsMap: Map<string, string> = new Map(); // Maps friend username to chat ID
 let isInitialized = false;
 
 // Create readline interface for non-blocking input
@@ -13,17 +12,125 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Helper function to generate chat ID from two usernames
-function generateChatId(user1: string, user2: string): string {
-  // Sort usernames to ensure consistent chat ID regardless of order
-  const sortedUsers = [user1, user2].sort();
-  return `${sortedUsers[0]}_${sortedUsers[1]}_chat`;
+// Helper function to promisify readline question
+function question(prompt: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(prompt, (answer) => {
+      resolve(answer);
+    });
+  });
 }
 
-// Initialize the client
-async function init() {
-  username = await question("Enter your username: ");
-  const ws = new WebSocket(`ws://localhost:4000?username=${username}`);
+// Authentication response types
+interface AuthResponse {
+  message: string;
+  username?: string;
+  token?: string;
+  error?: string;
+}
+
+// Authentication functions
+async function register(): Promise<boolean> {
+  try {
+    const username = await question("Enter username: ");
+    const password = await question("Enter password: ");
+
+    const response = await fetch("http://localhost:3000/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = (await response.json()) as AuthResponse;
+
+    if (response.ok) {
+      console.log(`✅ Registration successful! Welcome ${data.username}`);
+      return true;
+    } else {
+      console.log(`❌ Registration failed: ${data.error}`);
+      return false;
+    }
+  } catch (error) {
+    console.error("❌ Registration error:", error);
+    return false;
+  }
+}
+
+async function login(): Promise<boolean> {
+  try {
+    const usernameInput = await question("Enter username: ");
+    const password = await question("Enter password: ");
+
+    const response = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: usernameInput, password }),
+    });
+
+    const data = (await response.json()) as AuthResponse;
+
+    if (response.ok) {
+      username = data.username!;
+      authToken = data.token!;
+      console.log(`✅ Login successful! Welcome back ${username}`);
+      return true;
+    } else {
+      console.log(`❌ Login failed: ${data.error}`);
+      return false;
+    }
+  } catch (error) {
+    console.error("❌ Login error:", error);
+    return false;
+  }
+}
+
+async function authMenu(): Promise<void> {
+  console.log("\n=== Authentication ===");
+  console.log("1. Login");
+  console.log("2. Register");
+  console.log("3. Exit");
+
+  const choice = await question("Choose an option: ");
+
+  switch (choice) {
+    case "1":
+      const loginSuccess = await login();
+      if (loginSuccess) {
+        await connectToWebSocket();
+      } else {
+        await authMenu();
+      }
+      break;
+    case "2":
+      const registerSuccess = await register();
+      if (registerSuccess) {
+        console.log("Please login with your new account:");
+        await authMenu();
+      } else {
+        await authMenu();
+      }
+      break;
+    case "3":
+      console.log("Goodbye!");
+      rl.close();
+      process.exit();
+    default:
+      console.log("Invalid option");
+      await authMenu();
+  }
+}
+
+// WebSocket connection function
+async function connectToWebSocket(): Promise<void> {
+  const ws = new WebSocket(`ws://localhost:4000?username=${username}`, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
 
   ws.on("open", () => {
     console.log("Connected to group chat server!");
@@ -35,29 +142,17 @@ async function init() {
     switch (message.type) {
       case "INIT_DATA":
         console.log(
-          `👥 Friends List: ${message.friends.join(", ") || "No friends yet"}`
-        );
-        console.log(
           `📋 Groups: ${
             message.groups?.map((g: any) => g.groupName).join(", ") ||
             "No groups yet"
           }`
         );
-        friends = message.friends;
         groups = message.groups || [];
         if (!isInitialized) {
           isInitialized = true;
           // Start the menu after receiving initial data
           setImmediate(() => mainMenu(ws));
         }
-        break;
-
-      case "MESSAGE":
-        // Clear current line and display message, then restore prompt
-        readline.clearLine(process.stdout, 0);
-        readline.cursorTo(process.stdout, 0);
-        console.log(`\n📩 ${message.from}: ${message.content}`);
-        rl.prompt();
         break;
 
       case "GROUP_CHAT_CREATED":
@@ -106,36 +201,6 @@ async function init() {
         }
         break;
 
-      case "ONE_TO_ONE_CHAT_HISTORY":
-        console.log(`\n📜 Chat History:`);
-        if (message.messages && message.messages.length > 0) {
-          message.messages.forEach((msg: any) => {
-            console.log(
-              `  ${msg.from}: ${msg.text} (${new Date(
-                msg.timestamp
-              ).toLocaleString()})`
-            );
-          });
-        } else {
-          console.log("  No previous messages");
-        }
-        break;
-
-      case "NEW_ONE_TO_ONE_CHAT_AP":
-        if (message.from) {
-          console.log(`\n🤝 ${message.from} wants to start a chat with you!`);
-          console.log(`✅ Chat established with ${message.from}`);
-
-          // Add to friends list if not already there
-          if (!friends.includes(message.from)) {
-            friends.push(message.from);
-          }
-        } else if (message.msg) {
-          console.log(`\n✅ ${message.msg}`);
-        }
-        rl.prompt();
-        break;
-
       case "INFO":
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
@@ -168,15 +233,6 @@ async function init() {
   });
 }
 
-// Helper function to promisify readline question
-function question(prompt: string): Promise<string> {
-  return new Promise((resolve) => {
-    rl.question(prompt, (answer) => {
-      resolve(answer);
-    });
-  });
-}
-
 async function mainMenu(ws: WebSocket) {
   if (!isInitialized) {
     console.log("Waiting for server initialization...");
@@ -184,102 +240,29 @@ async function mainMenu(ws: WebSocket) {
   }
 
   console.log("\n=== Group Chat Menu ===");
-  console.log("1. Send Direct Message");
-  console.log("2. View Direct Chat History");
-  console.log("3. Start New Chat");
-  console.log("4. Create Group Chat");
-  console.log("5. Join Group Chat");
-  console.log("6. Send Group Message");
-  console.log("7. View Group Chat History");
-  console.log("8. List My Groups");
-  console.log("9. Exit");
+  console.log("1. Create Group Chat");
+  console.log("2. Join Group Chat");
+  console.log("3. Send Group Message");
+  console.log("4. View Group Chat History");
+  console.log("5. List My Groups");
+  console.log("6. Exit");
 
   const choice = await question("Choose an option: ");
 
   switch (choice) {
     case "1":
-      if (friends.length === 0) {
-        console.log("You have no friends yet 😢");
-        console.log("Use option 3 to start a new chat!");
-      } else {
-        console.log("Your Friends:", friends.join(", "));
-        const recipient = await question("Enter friend's username: ");
-
-        if (friends.includes(recipient)) {
-          const chatId = generateChatId(username, recipient);
-          const msg = await question("Enter message: ");
-          ws.send(
-            JSON.stringify({
-              type: "ONE_TO_ONE_CHAT",
-              from: username,
-              to: recipient,
-              content: msg,
-              chatId: chatId,
-            })
-          );
-        } else {
-          console.log(
-            `❌ No friendship found with ${recipient}. Use option 3 to start a new chat.`
-          );
-        }
-      }
-      setImmediate(() => mainMenu(ws));
-      break;
-
-    case "2":
-      if (friends.length === 0) {
-        console.log("You have no friends yet 😢");
-      } else {
-        console.log("Your Friends:", friends.join(", "));
-        const friendName = await question(
-          "Enter friend's username to view history: "
-        );
-
-        if (friends.includes(friendName)) {
-          const chatId = generateChatId(username, friendName);
-          ws.send(
-            JSON.stringify({
-              type: "GET_ONE_TO_ONE_HISTORY",
-              from: username,
-              to: friendName,
-              chatId: chatId,
-            })
-          );
-        } else {
-          console.log(`❌ No friendship found with ${friendName}.`);
-        }
-      }
-      setImmediate(() => mainMenu(ws));
-      break;
-
-    case "3":
-      const newFriend = await question("Enter username to start new chat: ");
-
-      // First establish the friendship/chat relationship
-      ws.send(
-        JSON.stringify({
-          type: "NEW_ONE_TO_ONE_CHAT",
-          from: username,
-          to: newFriend,
-        })
-      );
-
-      console.log(`🔄 Sending chat request to ${newFriend}...`);
-      setImmediate(() => mainMenu(ws));
-      break;
-
-    case "4":
       const groupName = await question("Enter group name: ");
       ws.send(
         JSON.stringify({
           type: "CREATE_GROUP_CHAT",
           groupName: groupName,
+          by: username,
         })
       );
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "5":
+    case "2":
       const groupId = await question("Enter group ID to join: ");
       ws.send(
         JSON.stringify({
@@ -290,7 +273,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "6":
+    case "3":
       if (groups.length === 0) {
         console.log("You are not in any groups yet 😢");
         console.log("Available groups to join: group1, group2, group3");
@@ -313,7 +296,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "7":
+    case "4":
       if (groups.length === 0) {
         console.log("You are not in any groups yet 😢");
         console.log("Available groups to join: group1, group2, group3");
@@ -333,7 +316,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "8":
+    case "5":
       console.log("\n📋 Your Groups:");
       if (groups.length === 0) {
         console.log("  You are not in any groups yet 😢");
@@ -346,7 +329,7 @@ async function mainMenu(ws: WebSocket) {
       setImmediate(() => mainMenu(ws));
       break;
 
-    case "9":
+    case "6":
       console.log("Goodbye!");
       ws.send(JSON.stringify({ type: "DISCONNECT", username }));
       ws.close();
@@ -368,4 +351,4 @@ process.on("SIGINT", () => {
 
 // Start the application
 console.log("🚀 Starting Group Chat Client...");
-init().catch(console.error);
+authMenu().catch(console.error);
