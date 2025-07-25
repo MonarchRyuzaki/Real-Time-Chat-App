@@ -46,12 +46,30 @@ function createClient(username: string): Promise<TestClient> {
 
       switch (message.type) {
         case "INIT_DATA":
-          console.log(
-            `👥 ${username} Friends: ${
-              message.friends.join(", ") || "No friends yet"
-            }`
-          );
-          client.friends = message.friends;
+          // Handle friend usernames from server (not formatted chat IDs)
+          if (message.chatIds && Array.isArray(message.chatIds)) {
+            // chatIds actually contains friend usernames from the server
+            client.friends = message.chatIds;
+            console.log(
+              `👥 ${username} Friends: ${
+                client.friends.length > 0
+                  ? client.friends.join(", ")
+                  : "No friends yet"
+              }`
+            );
+          }
+
+          // Handle groups data
+          if (message.groups && Array.isArray(message.groups)) {
+            console.log(
+              `🏷️ ${username} Groups: ${
+                message.groups.length > 0
+                  ? message.groups.join(", ")
+                  : "No groups yet"
+              }`
+            );
+          }
+
           resolve(client);
           break;
 

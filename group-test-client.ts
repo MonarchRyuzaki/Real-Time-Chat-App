@@ -141,13 +141,34 @@ async function connectToWebSocket(): Promise<void> {
 
     switch (message.type) {
       case "INIT_DATA":
-        console.log(
-          `📋 Groups: ${
-            message.groups?.map((g: any) => g.groupName).join(", ") ||
-            "No groups yet"
-          }`
-        );
-        groups = message.groups || [];
+        // Handle groups data - server sends array of group IDs
+        if (message.groups && Array.isArray(message.groups)) {
+          console.log(
+            `📋 Group IDs: ${
+              message.groups.length > 0
+                ? message.groups.join(", ")
+                : "No groups yet"
+            }`
+          );
+          // For now, store group IDs as simple objects
+          // In a real implementation, you'd fetch group details from the server
+          groups = message.groups.map((groupId: string) => ({
+            groupId: groupId,
+            groupName: `Group ${groupId}`, // Placeholder name
+          }));
+        }
+
+        // Handle friend usernames
+        if (message.chatIds && Array.isArray(message.chatIds)) {
+          console.log(
+            `👥 Friends: ${
+              message.chatIds.length > 0
+                ? message.chatIds.join(", ")
+                : "No friends yet"
+            }`
+          );
+        }
+
         if (!isInitialized) {
           isInitialized = true;
           // Start the menu after receiving initial data

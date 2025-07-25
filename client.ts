@@ -154,32 +154,42 @@ async function init() {
 
     switch (message.type) {
       case "INIT_DATA":
-        // Handle chat IDs from Cassandra
+        // Handle friend usernames from server (not chat IDs)
         if (message.chatIds && Array.isArray(message.chatIds)) {
-          chatIds = message.chatIds;
+          // chatIds actually contains friend usernames from the server
+          const friendUsernames = message.chatIds;
+
+          // Generate proper chat IDs and populate friendsMap
+          friendsMap.clear();
+          chatIds = [];
+
+          friendUsernames.forEach((friendUsername: string) => {
+            const chatId = generateChatId(username, friendUsername);
+            friendsMap.set(friendUsername, chatId);
+            chatIds.push(chatId);
+          });
+
           console.log(
             `💬 Active Chats: ${
               chatIds.length > 0 ? chatIds.join(", ") : "No active chats yet"
             }`
           );
-
-          // Extract friend usernames from chat IDs
-          friendsMap.clear();
-          chatIds.forEach((chatId) => {
-            // Extract the other user's name from chat_id format: "user1_user2_chat"
-            if (chatId.includes("_chat")) {
-              const parts = chatId.replace("_chat", "").split("_");
-              const otherUser = parts.find((part) => part !== username);
-              if (otherUser) {
-                friendsMap.set(otherUser, chatId);
-              }
-            }
-          });
-
-          const friendsList = Array.from(friendsMap.keys());
           console.log(
             `👥 Friends: ${
-              friendsList.length > 0 ? friendsList.join(", ") : "No friends yet"
+              friendUsernames.length > 0
+                ? friendUsernames.join(", ")
+                : "No friends yet"
+            }`
+          );
+        }
+
+        // Handle groups data
+        if (message.groups && Array.isArray(message.groups)) {
+          console.log(
+            `🏷️ Groups: ${
+              message.groups.length > 0
+                ? message.groups.join(", ")
+                : "No groups yet"
             }`
           );
         }

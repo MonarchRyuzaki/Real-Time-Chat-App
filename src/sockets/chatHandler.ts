@@ -65,8 +65,8 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
     );
     return;
   }
-  const primsa = getPrismaClient();
-  const user = await primsa.user.findUnique({
+  const prisma = getPrismaClient();
+  const user = await prisma.user.findUnique({
     where: { username: username },
     include: {
       groupMembership: true,
