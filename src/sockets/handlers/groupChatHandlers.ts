@@ -4,9 +4,9 @@ import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
 import {
   CreateGroupChatMessage,
-  JoinGroupChatMessage,
-  GroupChatMessage,
   GetGroupChatHistoryMessage,
+  GroupChatMessage,
+  JoinGroupChatMessage,
 } from "../../types/messageTypes";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
@@ -15,95 +15,165 @@ export async function createGroupChatHandler(
   ws: WebSocket,
   parsed: CreateGroupChatMessage
 ): Promise<void> {
-  const { groupName, by: createdBy } = parsed;
-  if (!groupName || !createdBy) {
-    WsResponse.error(ws, "Group name and creator are required.");
-    return;
-  }
-  if (!(await WsValidation.validateUser(ws, createdBy))) return;
-  const groupChatId = `group-${Date.now()}`;
-  const prisma = getPrismaClient();
-  await prisma.group.create({
-    data: {
-      groupId: groupChatId,
-      groupName: groupName,
-      createdBy: createdBy,
-    },
-  });
+  try {
+    const { groupName, by: createdBy } = parsed;
+    if (!groupName || !createdBy) {
+      WsResponse.error(ws, "Group name and creator are required.");
+      return;
+    }
 
-  WsResponse.custom(ws, {
-    type: "GROUP_CHAT_CREATED",
-    groupId: groupChatId,
-  });
+    if (!(await WsValidation.validateUser(ws, createdBy))) return;
+
+    const groupChatId = `group-${Date.now()}`;
+
+    try {
+      const prisma = getPrismaClient();
+      await prisma.group.create({
+        data: {
+          groupId: groupChatId,
+          groupName: groupName,
+          createdBy: createdBy,
+        },
+      });
+
+      WsResponse.custom(ws, {
+        type: "GROUP_CHAT_CREATED",
+        groupId: groupChatId,
+      });
+
+      console.log(`Group chat created: ${groupChatId} by ${createdBy}`);
+    } catch (dbError) {
+      console.error("Database error creating group chat:", dbError);
+      WsResponse.error(ws, "Failed to create group chat. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error in createGroupChatHandler:", error);
+    WsResponse.error(ws, "Failed to process group creation request.");
+  }
 }
-// group-1753413848303
+
 export async function joinGroupChatHandler(
   ws: WebSocket,
   parsed: JoinGroupChatMessage
 ): Promise<void> {
-  const { groupId, username } = parsed;
-  if (!groupId || !username) {
-    WsResponse.error(ws, "Group ID and username are required.");
-    return;
-  }
-  if (!(await WsValidation.validateUser(ws, username))) return;
-  if (!(await WsValidation.validateGroup(ws, groupId))) return;
-
-  const prisma = getPrismaClient();
-  const alreadyMember = await prisma.groupMembership.findFirst({
-    where: {
-      group: groupId,
-      user: username,
-    },
-  });
-  if (alreadyMember) {
-    WsResponse.error(ws, `User ${username} is already a member of the group.`);
-    return;
-  }
-  await prisma.groupMembership.create({
-    data: {
-      group: groupId,
-      user: username,
-    },
-  });
-  WsResponse.success(ws, `User ${username} has joined the group.`);
-
-  // Refactor this later to use a more efficient way to notify all members
-  // of the group about the new member.
-  // For now, we will fetch the group and notify all members.
-  // Ideally a queue or pub/sub system would be used.
-  const groupChat = await prisma.group.findUnique({
-    where: {
-      groupId: groupId,
-    },
-    include: {
-      members: true,
-    },
-  });
-  groupChat?.members.forEach((member) => {
-    const memberSocket = mapUserToSocket.get(member.user);
-    if (memberSocket) {
-      WsResponse.custom(memberSocket, {
-        type: "GROUP_MEMBER_JOINED",
-        groupId: groupId,
-        username: username,
-      });
+  try {
+    const { groupId, username } = parsed;
+    if (!groupId || !username) {
+      WsResponse.error(ws, "Group ID and username are required.");
+      return;
     }
-  });
+
+    if (!(await WsValidation.validateUser(ws, username))) return;
+    if (!(await WsValidation.validateGroup(ws, groupId))) return;
+
+    try {
+      const prisma = getPrismaClient();
+
+      // Check if user is already a member
+      const alreadyMember = await prisma.groupMembership.findFirst({
+        where: {
+          group: groupId,
+          user: username,
+        },
+      });
+
+      if (alreadyMember) {
+        WsResponse.error(
+          ws,
+          `User ${username} is already a member of the group.`
+        );
+        return;
+      }
+
+      // Add user to group
+      await prisma.groupMembership.create({
+        data: {
+          group: groupId,
+          user: username,
+        },
+      });
+
+      WsResponse.success(ws, `User ${username} has joined the group.`);
+
+      // Notify all group members about the new member
+      try {
+        const groupChat = await prisma.group.findUnique({
+          where: {
+            groupId: groupId,
+          },
+          include: {
+            members: true,
+          },
+        });
+
+        if (groupChat) {
+          groupChat.members.forEach((member) => {
+            try {
+              const memberSocket = mapUserToSocket.get(member.user);
+              if (memberSocket && memberSocket !== ws) {
+                // Don't notify the user who just joined
+                WsResponse.custom(memberSocket, {
+                  type: "GROUP_MEMBER_JOINED",
+                  groupId: groupId,
+                  username: username,
+                });
+              }
+            } catch (socketError) {
+              console.error(
+                `Error notifying member ${member.user} about new group member:`,
+                socketError
+              );
+            }
+          });
+        }
+      } catch (notificationError) {
+        console.error(
+          "Error notifying group members about new member:",
+          notificationError
+        );
+        // Don't fail the join operation if notification fails
+      }
+
+      console.log(`User ${username} joined group ${groupId}`);
+    } catch (dbError) {
+      console.error("Database error in joinGroupChatHandler:", dbError);
+      WsResponse.error(ws, "Failed to join group. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error in joinGroupChatHandler:", error);
+    WsResponse.error(ws, "Failed to process group join request.");
+  }
 }
 
 export function getGroupChatHistoryHandler(
   ws: WebSocket,
   parsed: GetGroupChatHistoryMessage
 ): void {
-  const { groupId } = parsed;
-  if (groupId in mockGroups) {
-    WsResponse.custom(ws, {
-      type: "GROUP_CHAT_HISTORY",
-      messages: (mockGroups as any)[groupId].messages,
-    });
-  } else {
-    WsResponse.error(ws, `Group chat with ID ${groupId} does not exist.`);
+  try {
+    const { groupId } = parsed;
+    if (!groupId) {
+      WsResponse.error(ws, "Group ID is required.");
+      return;
+    }
+
+    // TODO: Replace this mock data access with database call
+    try {
+      if (groupId in mockGroups) {
+        const groupData = (mockGroups as any)[groupId];
+        WsResponse.custom(ws, {
+          type: "GROUP_CHAT_HISTORY",
+          messages: groupData.messages || [],
+        });
+      } else {
+        WsResponse.error(ws, `Group chat with ID ${groupId} does not exist.`);
+      }
+    } catch (mockDataError) {
+      console.error("Error accessing mock group data:", mockDataError);
+      WsResponse.error(ws, "Failed to retrieve group chat history.");
+    }
+  } catch (error) {
+    console.error("Error in getGroupChatHistoryHandler:", error);
+    WsResponse.error(ws, "Failed to process group history request.");
   }
 }
 
@@ -111,32 +181,80 @@ export async function groupChatHandler(
   ws: WebSocket,
   parsed: GroupChatMessage
 ): Promise<void> {
-  const { to: groupId, from: fromUsername, content: messageContent } = parsed;
-  if (!groupId || !fromUsername || !messageContent) {
-    WsResponse.error(ws, "Group ID, sender, and message content are required.");
-    return;
-  }
-  if (!(await WsValidation.validateUser(ws, fromUsername))) return;
-  if (!(await WsValidation.validateGroup(ws, groupId))) return;
-  if (groupId in mockGroups) {
-    const groupChat = (mockGroups as any)[groupId];
-    groupChat.messages.push({
-      from: fromUsername,
-      text: messageContent,
-      timestamp: new Date().toISOString(),
-    });
+  try {
+    const { to: groupId, from: fromUsername, content: messageContent } = parsed;
+    if (!groupId || !fromUsername || !messageContent) {
+      WsResponse.error(
+        ws,
+        "Group ID, sender, and message content are required."
+      );
+      return;
+    }
 
-    groupChat.members.forEach((member: string) => {
-      if (member === fromUsername) return;
-      const memberSocket = mapUserToSocket.get(member);
-      if (memberSocket) {
-        WsResponse.custom(memberSocket, {
-          type: "GROUP_CHAT",
+    if (!(await WsValidation.validateUser(ws, fromUsername))) return;
+    if (!(await WsValidation.validateGroup(ws, groupId))) return;
+
+    // TODO: Replace this mock data usage with database operations
+    try {
+      if (groupId in mockGroups) {
+        const groupChat = (mockGroups as any)[groupId];
+
+        // Store message in mock data (will be replaced with database call)
+        const newMessage = {
           from: fromUsername,
-          groupId,
-          content: messageContent,
-        });
+          text: messageContent,
+          timestamp: new Date().toISOString(),
+        };
+
+        if (!groupChat.messages) {
+          groupChat.messages = [];
+        }
+        groupChat.messages.push(newMessage);
+
+        // Broadcast message to all group members
+        try {
+          if (groupChat.members && Array.isArray(groupChat.members)) {
+            groupChat.members.forEach((member: string) => {
+              if (member === fromUsername) return; // Don't send to sender
+
+              try {
+                const memberSocket = mapUserToSocket.get(member);
+                if (memberSocket) {
+                  WsResponse.custom(memberSocket, {
+                    type: "GROUP_CHAT",
+                    from: fromUsername,
+                    groupId,
+                    content: messageContent,
+                  });
+                }
+              } catch (socketError) {
+                console.error(
+                  `Error sending message to group member ${member}:`,
+                  socketError
+                );
+              }
+            });
+          }
+
+          console.log(
+            `Group message sent by ${fromUsername} to group ${groupId}`
+          );
+        } catch (broadcastError) {
+          console.error("Error broadcasting group message:", broadcastError);
+          WsResponse.error(
+            ws,
+            "Message sent but failed to notify all group members."
+          );
+        }
+      } else {
+        WsResponse.error(ws, `Group chat with ID ${groupId} does not exist.`);
       }
-    });
+    } catch (mockDataError) {
+      console.error("Error accessing/updating mock group data:", mockDataError);
+      WsResponse.error(ws, "Failed to send group message.");
+    }
+  } catch (error) {
+    console.error("Error in groupChatHandler:", error);
+    WsResponse.error(ws, "Failed to process group message.");
   }
 }
