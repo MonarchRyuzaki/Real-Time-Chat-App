@@ -92,21 +92,14 @@ export function getGroupChatHistoryHandler(
   ws: WebSocket,
   parsed: { type: string; groupId: string }
 ) {
-  const groupId = parsed.groupId;
+  const { groupId } = parsed;
   if (groupId in mockGroups) {
-    ws.send(
-      JSON.stringify({
-        type: "GROUP_CHAT_HISTORY",
-        messages: (mockGroups as any)[groupId].messages,
-      })
-    );
+    WsResponse.custom(ws, {
+      type: "GROUP_CHAT_HISTORY",
+      messages: (mockGroups as any)[groupId].messages,
+    });
   } else {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `Group chat with ID ${groupId} does not exist.`,
-      })
-    );
+    WsResponse.error(ws, `Group chat with ID ${groupId} does not exist.`);
   }
 }
 
