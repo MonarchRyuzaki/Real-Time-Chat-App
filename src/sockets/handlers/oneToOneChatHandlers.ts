@@ -73,38 +73,26 @@ export async function getOneToOneChatHistoryHandler(
   });
 }
 
-export function oneToOneChatHandler(
+export async function oneToOneChatHandler(
   ws: WebSocket,
   parsed: { from: string; to: string; content: string; chatId: string }
-): void {
-  const fromUsername = parsed.from;
-  const toUsername = parsed.to;
-  const messageContent = parsed.content;
-  const chatId = parsed.chatId;
-  const saveMessageToCassandra = insertOneToOneChat(
+): Promise<void> {
+  const {
+    from: fromUsername,
+    to: toUsername,
+    content: messageContent,
     chatId,
-    fromUsername,
-    toUsername,
-    messageContent
-  );
-  if (mapUserToSocket.has(toUsername)) {
-    const recipientSocket = mapUserToSocket.get(toUsername);
-    if (recipientSocket) {
-      recipientSocket.send(
-        JSON.stringify({
-          type: "MESSAGE",
-          from: fromUsername,
-          content: messageContent,
-          chatId: chatId,
-        })
-      );
-    }
-  } else {
-    ws.send(
-      JSON.stringify({
-        type: "INFO",
-        msg: `User ${toUsername} is not online.`,
-      })
-    );
+  } = parsed;
+  await insertOneToOneChat(chatId, fromUsername, toUsername, messageContent);
+  const recipientSocket = mapUserToSocket.get(toUsername);
+  if (!recipientSocket) {
+    WsResponse.info(ws, `User ${toUsername} is not online.`);
+    return;
   }
+  WsResponse.custom(ws, {
+    type: "MESSAGE",
+    from: fromUsername,
+    content: messageContent,
+    chatId: chatId,
+  });
 }
