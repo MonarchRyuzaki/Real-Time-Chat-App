@@ -30,7 +30,6 @@ export async function newOnetoOneChatHandler(
     try {
       const prisma = getPrismaClient();
 
-      // Check if chat already exists
       const existingChat = await prisma.friendship.findFirst({
         where: {
           OR: [
@@ -45,7 +44,6 @@ export async function newOnetoOneChatHandler(
         return;
       }
 
-      // Create bidirectional friendship records
       await Promise.all([
         prisma.friendship.create({
           data: {
@@ -61,7 +59,8 @@ export async function newOnetoOneChatHandler(
         }),
       ]);
 
-      // Notify the recipient if they're online
+      // Notification to recipient
+      // This is not opimized. Use a pubsub or queue here
       try {
         const recipientSocket = mapUserToSocket.get(toUsername);
         if (recipientSocket) {
@@ -82,7 +81,7 @@ export async function newOnetoOneChatHandler(
           "Error notifying recipient about new chat:",
           notificationError
         );
-        // Don't fail the operation if notification fails
+        
         WsResponse.custom(ws, {
           type: "NEW_ONE_TO_ONE_CHAT_AP",
           to: toUsername,
@@ -118,10 +117,7 @@ export async function getOneToOneChatHistoryHandler(
       return;
     }
 
-    // TODO: Add validation for chat access permissions here when implementing proper authentication
-
     try {
-      // This will be replaced with database call - currently using Cassandra
       const chatHistory = await getOneToOneChatHistory(chatId);
 
       WsResponse.custom(ws, {
@@ -163,10 +159,7 @@ export async function oneToOneChatHandler(
       return;
     }
 
-    // TODO: Add validation to ensure sender has permission to send messages in this chat
-
     try {
-      // Store message in Cassandra (will be replaced with unified database approach)
       await insertOneToOneChat(
         chatId,
         fromUsername,
@@ -174,7 +167,6 @@ export async function oneToOneChatHandler(
         messageContent
       );
 
-      // Deliver message to recipient if online
       try {
         const recipientSocket = mapUserToSocket.get(toUsername);
 

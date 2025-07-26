@@ -75,7 +75,7 @@ export async function closeCassandraClient(): Promise<void> {
     }
   } catch (error) {
     console.error("Error closing Cassandra client:", error);
-    cassandraClient = null; // Set to null anyway to prevent further usage
+    cassandraClient = null;
     throw error;
   }
 }

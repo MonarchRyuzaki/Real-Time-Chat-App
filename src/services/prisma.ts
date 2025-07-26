@@ -59,7 +59,7 @@ export async function closePrismaClient(): Promise<void> {
     }
   } catch (error) {
     logger.error("Error closing Prisma client:", error);
-    prismaClient = null; // Set to null anyway to prevent further usage
+    prismaClient = null;
     throw error;
   }
 }

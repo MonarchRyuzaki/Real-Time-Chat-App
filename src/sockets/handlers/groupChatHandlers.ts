@@ -69,7 +69,6 @@ export async function joinGroupChatHandler(
     try {
       const prisma = getPrismaClient();
 
-      // Check if user is already a member
       const alreadyMember = await prisma.groupMembership.findFirst({
         where: {
           group: groupId,
@@ -85,7 +84,6 @@ export async function joinGroupChatHandler(
         return;
       }
 
-      // Add user to group
       await prisma.groupMembership.create({
         data: {
           group: groupId,
@@ -95,7 +93,6 @@ export async function joinGroupChatHandler(
 
       WsResponse.success(ws, `User ${username} has joined the group.`);
 
-      // Notify all group members about the new member
       try {
         const groupChat = await prisma.group.findUnique({
           where: {
@@ -111,7 +108,6 @@ export async function joinGroupChatHandler(
             try {
               const memberSocket = mapUserToSocket.get(member.user);
               if (memberSocket && memberSocket !== ws) {
-                // Don't notify the user who just joined
                 WsResponse.custom(memberSocket, {
                   type: "GROUP_MEMBER_JOINED",
                   groupId: groupId,
@@ -131,7 +127,6 @@ export async function joinGroupChatHandler(
           "Error notifying group members about new member:",
           notificationError
         );
-        // Don't fail the join operation if notification fails
       }
 
       console.log(`User ${username} joined group ${groupId}`);
@@ -156,7 +151,6 @@ export function getGroupChatHistoryHandler(
       return;
     }
 
-    // TODO: Replace this mock data access with database call
     try {
       if (groupId in mockGroups) {
         const groupData = (mockGroups as any)[groupId];
@@ -194,12 +188,10 @@ export async function groupChatHandler(
     if (!(await WsValidation.validateUser(ws, fromUsername))) return;
     if (!(await WsValidation.validateGroup(ws, groupId))) return;
 
-    // TODO: Replace this mock data usage with database operations
     try {
       if (groupId in mockGroups) {
         const groupChat = (mockGroups as any)[groupId];
 
-        // Store message in mock data (will be replaced with database call)
         const newMessage = {
           from: fromUsername,
           text: messageContent,
@@ -211,11 +203,10 @@ export async function groupChatHandler(
         }
         groupChat.messages.push(newMessage);
 
-        // Broadcast message to all group members
         try {
           if (groupChat.members && Array.isArray(groupChat.members)) {
             groupChat.members.forEach((member: string) => {
-              if (member === fromUsername) return; // Don't send to sender
+              if (member === fromUsername) return; 
 
               try {
                 const memberSocket = mapUserToSocket.get(member);

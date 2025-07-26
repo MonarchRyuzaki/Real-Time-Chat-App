@@ -16,6 +16,7 @@ import {
   newOnetoOneChatHandler,
   oneToOneChatHandler,
 } from "./handlers/oneToOneChatHandlers";
+import { WsValidation } from "../utils/wsValidation";
 
 export function chatHandler(ws: WebSocket, wss: WebSocketServer): void {
   try {
@@ -92,25 +93,8 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer): void {
 async function initChatHandler(ws: WebSocket): Promise<void> {
   try {
     const username = mapSocketToUser.get(ws);
-    if (!username) {
-      WsResponse.error(ws, "You must be logged in to use the chat.");
-      return;
-    }
+    if (!username || !(await WsValidation.validateUser(ws, username))) return;
 
-    // Check if user exists with error handling
-    try {
-      const userExistsResult = await userExists(username);
-      if (!userExistsResult) {
-        WsResponse.error(ws, `User ${username} does not exist.`);
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking if user exists:", username, error);
-      WsResponse.error(ws, "Failed to verify user credentials.");
-      return;
-    }
-
-    // Database operations with error handling
     try {
       const prisma = getPrismaClient();
       const user = await prisma.user.findUnique({
@@ -126,7 +110,6 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
         return;
       }
 
-      // Send initial data to client
       WsResponse.custom(ws, {
         type: "INIT_DATA",
         chatIds: user.friendships.map((friendship) => friendship.friend) || [],
@@ -155,7 +138,6 @@ function disconnectHandler(ws: WebSocket): void {
         console.log(`User ${username} disconnected gracefully`);
       } catch (cleanupError) {
         console.error("Error cleaning up user mappings during disconnect:", cleanupError);
-        // Still try to send disconnect message even if cleanup fails
         WsResponse.info(ws, "You have been disconnected.");
       }
     } else {
@@ -164,6 +146,5 @@ function disconnectHandler(ws: WebSocket): void {
     }
   } catch (error) {
     console.error("Error in disconnectHandler:", error);
-    // Don't send error response here as the client is disconnecting
   }
 }

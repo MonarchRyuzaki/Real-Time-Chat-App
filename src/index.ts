@@ -17,7 +17,6 @@ async function startServer() {
   try {
     logger.info("🚀 Starting Real-Time Chat Application...");
 
-    // Initialize Cassandra client first
     try {
       logger.info("🔌 Connecting to Cassandra database...");
       await initializeCassandraClient();
@@ -27,7 +26,6 @@ async function startServer() {
       throw new Error("Cassandra connection failed - cannot start server");
     }
 
-    // Initialize Prisma client
     try {
       logger.info("🔌 Connecting to Prisma database...");
       await initializePrismaClient();
@@ -37,7 +35,6 @@ async function startServer() {
       throw new Error("Prisma connection failed - cannot start server");
     }
 
-    // Create and start HTTP server
     try {
       const app = createHttpServer();
       const httpServer = app.listen(PORT, () => {
@@ -48,7 +45,6 @@ async function startServer() {
         logger.info(`📚 API routes available at http://localhost:${PORT}/api`);
       });
 
-      // Handle HTTP server errors
       httpServer.on("error", (error) => {
         logger.error("HTTP Server error:", error);
       });
@@ -57,7 +53,6 @@ async function startServer() {
       throw new Error("HTTP server startup failed");
     }
 
-    // Create and start WebSocket server
     try {
       createWebSocketServer({ port: WS_PORT, handler: chatHandler });
       logger.info(`🔌 WebSocket server started on port ${WS_PORT}`);
@@ -68,7 +63,6 @@ async function startServer() {
 
     logger.info("✅ All services started successfully");
 
-    // Set up graceful shutdown handlers
     process.on("SIGTERM", gracefulShutdown);
     process.on("SIGINT", gracefulShutdown);
     process.on("uncaughtException", (error) => {
@@ -91,7 +85,6 @@ async function gracefulShutdown() {
 
   const shutdownPromises = [];
 
-  // Close Cassandra connection
   try {
     shutdownPromises.push(
       closeCassandraClient().catch((error) => {
@@ -102,7 +95,6 @@ async function gracefulShutdown() {
     logger.error("Error initiating Cassandra shutdown:", error);
   }
 
-  // Close Prisma connection
   try {
     shutdownPromises.push(
       closePrismaClient().catch((error) => {
@@ -114,7 +106,6 @@ async function gracefulShutdown() {
   }
 
   try {
-    // Wait for all shutdown operations to complete with a timeout
     await Promise.race([
       Promise.all(shutdownPromises),
       new Promise((_, reject) =>
@@ -131,7 +122,6 @@ async function gracefulShutdown() {
   }
 }
 
-// Start the server
 startServer().catch((error) => {
   logger.error("❌ Fatal error starting server:", error);
   process.exit(1);
