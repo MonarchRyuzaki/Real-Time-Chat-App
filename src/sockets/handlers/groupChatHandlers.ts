@@ -16,10 +16,7 @@ export async function createGroupChatHandler(
     WsResponse.error(ws, "Group name and creator are required.");
     return;
   }
-  if (!(await WsValidation.validateUser(ws, createdBy))) {
-    WsResponse.error(ws, `User ${createdBy} does not exist.`);
-    return;
-  }
+  if (!(await WsValidation.validateUser(ws, createdBy))) return;
   const groupChatId = `group-${Date.now()}`;
   const prisma = getPrismaClient();
   await prisma.group.create({
@@ -40,36 +37,14 @@ export async function joinGroupChatHandler(
   ws: WebSocket,
   parsed: { type: string; groupId: string; username: string }
 ) {
-  const groupId = parsed.groupId;
-  const username = parsed.username;
+  const { groupId, username } = parsed;
   if (!groupId || !username) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: "Group ID and username are required.",
-      })
-    );
+    WsResponse.error(ws, "Group ID and username are required.");
     return;
   }
-  if (!(await userExists(username))) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `User ${username} does not exist.`,
-      })
-    );
-    return;
-  }
-  const group = await groupExists(groupId);
-  if (!group) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `Group chat with ID ${groupId} does not exist.`,
-      })
-    );
-    return;
-  }
+  if (!(await WsValidation.validateUser(ws, username))) return;
+  if (!(await WsValidation.validateGroup(ws, groupId))) return;
+
   const prisma = getPrismaClient();
   const alreadyMember = await prisma.groupMembership.findFirst({
     where: {
@@ -78,12 +53,7 @@ export async function joinGroupChatHandler(
     },
   });
   if (alreadyMember) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `User ${username} is already a member of the group.`,
-      })
-    );
+    WsResponse.error(ws, `User ${username} is already a member of the group.`);
     return;
   }
   await prisma.groupMembership.create({
@@ -92,12 +62,12 @@ export async function joinGroupChatHandler(
       user: username,
     },
   });
-  ws.send(
-    JSON.stringify({
-      type: "SUCCESS",
-      msg: `User ${username} has joined the group.`,
-    })
-  );
+  WsResponse.success(ws, `User ${username} has joined the group.`);
+
+  // Refactor this later to use a more efficient way to notify all members
+  // of the group about the new member.
+  // For now, we will fetch the group and notify all members.
+  // Ideally a queue or pub/sub system would be used.
   const groupChat = await prisma.group.findUnique({
     where: {
       groupId: groupId,
@@ -106,20 +76,16 @@ export async function joinGroupChatHandler(
       members: true,
     },
   });
-  if (groupChat) {
-    groupChat.members.forEach((member) => {
-      const memberSocket = mapUserToSocket.get(member.user);
-      if (memberSocket) {
-        memberSocket.send(
-          JSON.stringify({
-            type: "GROUP_MEMBER_JOINED",
-            groupId: groupId,
-            username: username,
-          })
-        );
-      }
-    });
-  }
+  groupChat?.members.forEach((member) => {
+    const memberSocket = mapUserToSocket.get(member.user);
+    if (memberSocket) {
+      WsResponse.custom(memberSocket, {
+        type: "GROUP_MEMBER_JOINED",
+        groupId: groupId,
+        username: username,
+      });
+    }
+  });
 }
 
 export function getGroupChatHistoryHandler(
