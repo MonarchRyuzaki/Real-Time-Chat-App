@@ -65,16 +65,12 @@ export async function getOneToOneChatHistoryHandler(
   ws: WebSocket,
   parsed: { from: string; to: string; chatId: string }
 ): Promise<void> {
-  const fromUsername = parsed.from;
-  const toUsername = parsed.to;
-  const chatId = parsed.chatId;
+  const { from: fromUsername, to: toUsername, chatId } = parsed;
   const chatHistory = await getOneToOneChatHistory(chatId);
-  ws.send(
-    JSON.stringify({
-      type: "ONE_TO_ONE_CHAT_HISTORY",
-      messages: chatHistory,
-    })
-  );
+  WsResponse.custom(ws, {
+    type: "ONE_TO_ONE_CHAT_HISTORY",
+    messages: chatHistory,
+  });
 }
 
 export function oneToOneChatHandler(
