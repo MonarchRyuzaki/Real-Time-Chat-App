@@ -1,54 +1,25 @@
 import { WebSocket } from "ws";
 import { getOneToOneChatHistory } from "../../cassandra/get_one_to_one_chat_history_by_chat_id";
 import { insertOneToOneChat } from "../../cassandra/insert_one_to_one_chat";
-import { userExists } from "../../prisma/userExists";
 import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
+import { WsResponse } from "../../utils/wsResponse";
+import { WsValidation } from "../../utils/wsValidation";
 
 export async function newOnetoOneChatHandler(
   ws: WebSocket,
   parsed: { type: string; from: string; to: string }
 ): Promise<void> {
-  const fromUsername = parsed.from;
-  const toUsername = parsed.to;
+  const { from: fromUsername, to: toUsername } = parsed;
   const prisma = getPrismaClient();
   if (!toUsername || !fromUsername) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: "Both 'from' and 'to' usernames are required.",
-      })
-    );
+    WsResponse.error(ws, "Both 'from' and 'to' usernames are required.");
     return;
   }
-  if (fromUsername === toUsername) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: "You cannot start a chat with yourself.",
-      })
-    );
-    return;
-  }
-  if (!(await userExists(toUsername))) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `User ${toUsername} does not exist.`,
-      })
-    );
-    return;
-  }
-  if (!(await userExists(fromUsername))) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `User ${fromUsername} does not exist.`,
-      })
-    );
-    return;
-  }
-  const chat = await prisma.friendship.findFirst({
+  if (!WsValidation.validateSelfChat(ws, fromUsername, toUsername)) return;
+  if (!(await WsValidation.validateUser(ws, toUsername))) return;
+  if (!(await WsValidation.validateUser(ws, fromUsername))) return;
+  const existingChat = await prisma.friendship.findFirst({
     where: {
       OR: [
         { user: fromUsername, friend: toUsername },
@@ -56,51 +27,37 @@ export async function newOnetoOneChatHandler(
       ],
     },
   });
-  if (chat) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `Chat with ${toUsername} already exists.`,
-      })
-    );
+  if (existingChat) {
+    WsResponse.error(ws, `Chat with ${toUsername} already exists.`);
     return;
   }
-  await prisma.friendship.create({
-    data: {
-      user: fromUsername,
-      friend: toUsername,
-    },
-  });
-  await prisma.friendship.create({
-    data: {
-      user: toUsername,
-      friend: fromUsername,
-    },
-  });
-  if (mapUserToSocket.has(toUsername)) {
-    const recipientSocket = mapUserToSocket.get(toUsername);
-    if (recipientSocket) {
-      recipientSocket.send(
-        JSON.stringify({
-          type: "NEW_ONE_TO_ONE_CHAT_AP",
-          from: fromUsername,
-        })
-      );
-      ws.send(
-        JSON.stringify({
-          type: "NEW_ONE_TO_ONE_CHAT_AP",
-          to: toUsername,
-          msg: `Chat request sent to ${toUsername}.`,
-        })
-      );
-    }
+  await Promise.all([
+    prisma.friendship.create({
+      data: {
+        user: fromUsername,
+        friend: toUsername,
+      },
+    }),
+    prisma.friendship.create({
+      data: {
+        user: toUsername,
+        friend: fromUsername,
+      },
+    }),
+  ]);
+  const recipientSocket = mapUserToSocket.get(toUsername);
+  if (recipientSocket) {
+    WsResponse.custom(recipientSocket, {
+      type: "NEW_ONE_TO_ONE_CHAT_AP",
+      from: fromUsername,
+    });
+    WsResponse.custom(ws, {
+      type: "NEW_ONE_TO_ONE_CHAT_AP",
+      to: toUsername,
+      msg: `Chat request sent to ${toUsername}.`,
+    });
   } else {
-    ws.send(
-      JSON.stringify({
-        type: "INFO",
-        msg: `User ${toUsername} is not online.`,
-      })
-    );
+    WsResponse.info(ws, `User ${toUsername} is not online.`);
   }
 }
 
