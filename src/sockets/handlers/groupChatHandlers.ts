@@ -103,14 +103,17 @@ export function getGroupChatHistoryHandler(
   }
 }
 
-export function groupChatHandler(
+export async function groupChatHandler(
   ws: WebSocket,
   parsed: { type: string; from: string; to: string; content: string }
 ) {
-  const groupId = parsed.to;
-  const fromUsername = parsed.from;
-  const messageContent = parsed.content;
-
+  const { to: groupId, from: fromUsername, content: messageContent } = parsed;
+  if (!groupId || !fromUsername || !messageContent) {
+    WsResponse.error(ws, "Group ID, sender, and message content are required.");
+    return;
+  }
+  if (!(await WsValidation.validateUser(ws, fromUsername))) return;
+  if (!(await WsValidation.validateGroup(ws, groupId))) return;
   if (groupId in mockGroups) {
     const groupChat = (mockGroups as any)[groupId];
     groupChat.messages.push({
@@ -123,14 +126,12 @@ export function groupChatHandler(
       if (member === fromUsername) return;
       const memberSocket = mapUserToSocket.get(member);
       if (memberSocket) {
-        memberSocket.send(
-          JSON.stringify({
-            type: "GROUP_CHAT",
-            from: fromUsername,
-            groupId,
-            content: messageContent,
-          })
-        );
+        WsResponse.custom(memberSocket, {
+          type: "GROUP_CHAT",
+          from: fromUsername,
+          groupId,
+          content: messageContent,
+        });
       }
     });
   }
