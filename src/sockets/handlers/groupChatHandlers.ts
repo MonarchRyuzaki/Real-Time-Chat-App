@@ -4,32 +4,23 @@ import { groupExists } from "../../prisma/groupExists";
 import { userExists } from "../../prisma/userExists";
 import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
+import { WsResponse } from "../../utils/wsResponse";
+import { WsValidation } from "../../utils/wsValidation";
 
 export async function createGroupChatHandler(
   ws: WebSocket,
   parsed: { type: string; groupName: string; by: string }
 ) {
-  const groupName = parsed.groupName;
-  const createdBy = parsed.by;
-  const groupChatId = `group-${Date.now()}`;
+  const { groupName, by: createdBy } = parsed;
   if (!groupName || !createdBy) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: "Group name and creator are required.",
-      })
-    );
+    WsResponse.error(ws, "Group name and creator are required.");
     return;
   }
-  if (!(await userExists(createdBy))) {
-    ws.send(
-      JSON.stringify({
-        type: "ERROR",
-        msg: `User ${createdBy} does not exist.`,
-      })
-    );
+  if (!(await WsValidation.validateUser(ws, createdBy))) {
+    WsResponse.error(ws, `User ${createdBy} does not exist.`);
     return;
   }
+  const groupChatId = `group-${Date.now()}`;
   const prisma = getPrismaClient();
   await prisma.group.create({
     data: {
@@ -39,12 +30,10 @@ export async function createGroupChatHandler(
     },
   });
 
-  ws.send(
-    JSON.stringify({
-      type: "GROUP_CHAT_CREATED",
-      groupChatId,
-    })
-  );
+  WsResponse.custom(ws, {
+    type: "GROUP_CHAT_CREATED",
+    groupId: groupChatId,
+  });
 }
 // group-1753413848303
 export async function joinGroupChatHandler(
