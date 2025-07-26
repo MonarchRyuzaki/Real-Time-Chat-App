@@ -3,12 +3,17 @@ import { getOneToOneChatHistory } from "../../cassandra/get_one_to_one_chat_hist
 import { insertOneToOneChat } from "../../cassandra/insert_one_to_one_chat";
 import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
+import {
+  NewOneToOneChatMessage,
+  OneToOneChatMessage,
+  GetOneToOneChatHistoryMessage,
+} from "../../types/messageTypes";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
 
 export async function newOnetoOneChatHandler(
   ws: WebSocket,
-  parsed: { type: string; from: string; to: string }
+  parsed: NewOneToOneChatMessage
 ): Promise<void> {
   const { from: fromUsername, to: toUsername } = parsed;
   const prisma = getPrismaClient();
@@ -19,6 +24,7 @@ export async function newOnetoOneChatHandler(
   if (!WsValidation.validateSelfChat(ws, fromUsername, toUsername)) return;
   if (!(await WsValidation.validateUser(ws, toUsername))) return;
   if (!(await WsValidation.validateUser(ws, fromUsername))) return;
+
   const existingChat = await prisma.friendship.findFirst({
     where: {
       OR: [
@@ -27,10 +33,12 @@ export async function newOnetoOneChatHandler(
       ],
     },
   });
+
   if (existingChat) {
     WsResponse.error(ws, `Chat with ${toUsername} already exists.`);
     return;
   }
+
   await Promise.all([
     prisma.friendship.create({
       data: {
@@ -45,6 +53,7 @@ export async function newOnetoOneChatHandler(
       },
     }),
   ]);
+
   const recipientSocket = mapUserToSocket.get(toUsername);
   if (recipientSocket) {
     WsResponse.custom(recipientSocket, {
@@ -63,10 +72,11 @@ export async function newOnetoOneChatHandler(
 
 export async function getOneToOneChatHistoryHandler(
   ws: WebSocket,
-  parsed: { from: string; to: string; chatId: string }
+  parsed: GetOneToOneChatHistoryMessage
 ): Promise<void> {
   const { from: fromUsername, to: toUsername, chatId } = parsed;
   const chatHistory = await getOneToOneChatHistory(chatId);
+
   WsResponse.custom(ws, {
     type: "ONE_TO_ONE_CHAT_HISTORY",
     messages: chatHistory,
@@ -75,7 +85,7 @@ export async function getOneToOneChatHistoryHandler(
 
 export async function oneToOneChatHandler(
   ws: WebSocket,
-  parsed: { from: string; to: string; content: string; chatId: string }
+  parsed: OneToOneChatMessage
 ): Promise<void> {
   const {
     from: fromUsername,
@@ -83,13 +93,16 @@ export async function oneToOneChatHandler(
     content: messageContent,
     chatId,
   } = parsed;
+
   await insertOneToOneChat(chatId, fromUsername, toUsername, messageContent);
   const recipientSocket = mapUserToSocket.get(toUsername);
+
   if (!recipientSocket) {
     WsResponse.info(ws, `User ${toUsername} is not online.`);
     return;
   }
-  WsResponse.custom(ws, {
+
+  WsResponse.custom(recipientSocket, {
     type: "MESSAGE",
     from: fromUsername,
     content: messageContent,

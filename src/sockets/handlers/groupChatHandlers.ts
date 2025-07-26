@@ -1,16 +1,20 @@
 import { WebSocket } from "ws";
 import { mockGroups } from "../../mockData";
-import { groupExists } from "../../prisma/groupExists";
-import { userExists } from "../../prisma/userExists";
 import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
+import {
+  CreateGroupChatMessage,
+  JoinGroupChatMessage,
+  GroupChatMessage,
+  GetGroupChatHistoryMessage,
+} from "../../types/messageTypes";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
 
 export async function createGroupChatHandler(
   ws: WebSocket,
-  parsed: { type: string; groupName: string; by: string }
-) {
+  parsed: CreateGroupChatMessage
+): Promise<void> {
   const { groupName, by: createdBy } = parsed;
   if (!groupName || !createdBy) {
     WsResponse.error(ws, "Group name and creator are required.");
@@ -35,8 +39,8 @@ export async function createGroupChatHandler(
 // group-1753413848303
 export async function joinGroupChatHandler(
   ws: WebSocket,
-  parsed: { type: string; groupId: string; username: string }
-) {
+  parsed: JoinGroupChatMessage
+): Promise<void> {
   const { groupId, username } = parsed;
   if (!groupId || !username) {
     WsResponse.error(ws, "Group ID and username are required.");
@@ -90,8 +94,8 @@ export async function joinGroupChatHandler(
 
 export function getGroupChatHistoryHandler(
   ws: WebSocket,
-  parsed: { type: string; groupId: string }
-) {
+  parsed: GetGroupChatHistoryMessage
+): void {
   const { groupId } = parsed;
   if (groupId in mockGroups) {
     WsResponse.custom(ws, {
@@ -105,8 +109,8 @@ export function getGroupChatHistoryHandler(
 
 export async function groupChatHandler(
   ws: WebSocket,
-  parsed: { type: string; from: string; to: string; content: string }
-) {
+  parsed: GroupChatMessage
+): Promise<void> {
   const { to: groupId, from: fromUsername, content: messageContent } = parsed;
   if (!groupId || !fromUsername || !messageContent) {
     WsResponse.error(ws, "Group ID, sender, and message content are required.");
