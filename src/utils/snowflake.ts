@@ -1,6 +1,6 @@
 // Snowflake ID structure:
 // 1 bit (unused) + 41 bits (timestamp) + 5 bits (machine ID) + 17 bits (sequence)
-const EPOCH = 1753570766000n; // Date and time (GMT): Saturday, 26 July 2025 22:59:26
+export const EPOCH = 1753570766000n; // Date and time (GMT): Saturday, 26 July 2025 22:59:26
 const TIMESTAMP_BITS = 41n;
 const MACHINE_ID_BITS = 5n;
 const SEQUENCE_BITS = 17n;
@@ -9,7 +9,7 @@ const MAX_MACHINE_ID = (1n << MACHINE_ID_BITS) - 1n; // 31
 const MAX_SEQUENCE = (1n << SEQUENCE_BITS) - 1n; // 131071
 
 const MACHINE_ID_SHIFT = SEQUENCE_BITS;
-const TIMESTAMP_SHIFT = SEQUENCE_BITS + MACHINE_ID_BITS;
+export const TIMESTAMP_SHIFT = SEQUENCE_BITS + MACHINE_ID_BITS;
 
 class SnowflakeGenerator {
     private machineId: bigint;

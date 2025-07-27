@@ -1,4 +1,5 @@
 import { getCassandraClient } from "../services/cassandra";
+import { getTimestampFromSnowflake } from "../utils/timestampFromSnowflake";
 
 export async function getOneToOneChatHistory(chatId: string): Promise<
   {
@@ -31,9 +32,9 @@ export async function getOneToOneChatHistory(chatId: string): Promise<
       from: row.message_from || "",
       to: row.message_to || "",
       text: row.message_text || "",
-      timestamp: new Date(
-        parseInt(row.message_id?.toString() || "0")
-      ).toISOString(),
+      timestamp: getTimestampFromSnowflake(
+        row.message_id?.toString() || ""
+      ).toString(),
     }));
 
     console.log(`Retrieved ${messages.length} messages for chat ${chatId}`);
