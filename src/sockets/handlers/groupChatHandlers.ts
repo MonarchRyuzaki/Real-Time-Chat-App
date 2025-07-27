@@ -1,4 +1,6 @@
 import { WebSocket } from "ws";
+import { getGroupChatMessage } from "../../cassandra/get_group_chat_message";
+import { insertGroupChatMessage } from "../../cassandra/insert_group_chat_message";
 import { mockGroups } from "../../mockData";
 import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
@@ -8,6 +10,7 @@ import {
   GroupChatMessage,
   JoinGroupChatMessage,
 } from "../../types/messageTypes";
+import { snowflakeIdGenerator } from "../../utils/snowflake";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
 
@@ -24,7 +27,7 @@ export async function createGroupChatHandler(
 
   if (!(await WsValidation.validateUser(ws, createdBy))) return;
 
-  const groupChatId = `group-${Date.now()}`;
+  const groupChatId = snowflakeIdGenerator();
 
   try {
     const prisma = getPrismaClient();
@@ -89,7 +92,7 @@ export async function joinGroupChatHandler(
 
     WsResponse.success(ws, `User ${username} has joined the group.`);
 
-    // Notify other group members
+    // Notify other group members || Queue Refactor Later for Optimization
     await notifyGroupMembers(groupId, username, ws);
 
     console.log(`User ${username} joined group ${groupId}`);
@@ -128,27 +131,21 @@ async function notifyGroupMembers(
   }
 }
 
-export function getGroupChatHistoryHandler(
+export async function getGroupChatHistoryHandler(
   ws: WebSocket,
   parsed: GetGroupChatHistoryMessage
-): void {
+): Promise<void> {
   const { groupId } = parsed;
 
-  if (!groupId) {
-    WsResponse.error(ws, "Group ID is required.");
-    return;
-  }
+  if (!(await WsValidation.validateGroup(ws, groupId))) return;
 
   try {
-    if (groupId in mockGroups) {
-      const groupData = (mockGroups as any)[groupId];
-      WsResponse.custom(ws, {
-        type: "GROUP_CHAT_HISTORY",
-        messages: groupData.messages || [],
-      });
-    } else {
-      WsResponse.error(ws, `Group chat with ID ${groupId} does not exist.`);
-    }
+    // Fetch group chat history from database
+    const groupMessages = await getGroupChatMessage(groupId);
+    WsResponse.custom(ws, {
+      type: "GROUP_CHAT_HISTORY",
+      messages: groupMessages || [],
+    });
   } catch (error) {
     console.error("Error retrieving group history:", error);
     WsResponse.error(ws, "Failed to retrieve group chat history.");
@@ -170,22 +167,14 @@ export async function groupChatHandler(
   if (!(await WsValidation.validateGroup(ws, groupId))) return;
 
   try {
-    if (!(groupId in mockGroups)) {
-      WsResponse.error(ws, `Group chat with ID ${groupId} does not exist.`);
-      return;
-    }
+    const prisma = getPrismaClient();
+    const groupChat = await prisma.group.findUnique({
+      where: { groupId },
+      include: { members: true },
+    });
 
-    const groupChat = (mockGroups as any)[groupId];
-    const newMessage = {
-      from: fromUsername,
-      text: messageContent,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (!groupChat.messages) {
-      groupChat.messages = [];
-    }
-    groupChat.messages.push(newMessage);
+    // Save message to database
+    await insertGroupChatMessage(groupId, fromUsername, messageContent);
 
     // Broadcast message to group members
     await broadcastGroupMessage(
