@@ -1,4 +1,5 @@
 import { getCassandraClient } from "../services/cassandra";
+import { snowflakeIdGenerator } from "../utils/snowflake";
 
 export async function insertOneToOneChat(
   chatId: string,
@@ -22,7 +23,7 @@ export async function insertOneToOneChat(
 
   const query =
     "INSERT INTO one_to_one_message_by_chat_id (chat_id, message_id, message_from, message_text, message_to) VALUES (?, ?, ?, ?, ?)";
-  const messageId = Date.now().toString(); // Convert to string for consistency
+  const messageId = snowflakeIdGenerator();
 
   try {
     await cassandraClient.execute(
