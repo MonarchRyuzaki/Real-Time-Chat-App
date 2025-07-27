@@ -71,6 +71,8 @@ let chatIds: string[] = [];
 let friendsMap: Map<string, string> = new Map();
 let isInitialized = false;
 let isConnecting = false;
+let awaitingInput = false; // Add flag to prevent clearing output
+let pendingGroupJoin: string | null = null; // Track group ID we're trying to join
 
 // Create readline interface for non-blocking input
 const rl = readline.createInterface({
@@ -80,8 +82,8 @@ const rl = readline.createInterface({
 
 // Clear screen and show header
 function showHeader() {
-  console.clear();
-  console.log("🏷️ Real-Time Group Chat Application");
+  // Don't clear the screen - let messages stay visible
+  console.log("\n🏷️ Real-Time Group Chat Application");
   console.log("=".repeat(50));
   if (username) {
     console.log(`👤 Logged in as: ${username}`);
@@ -386,31 +388,36 @@ function handleInitData(message: InitDataMessage, ws: WebSocket) {
 }
 
 function handleGroupChatCreated(message: GroupChatCreatedResponse) {
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
   console.log(`\n🎉 Group chat created with ID: ${message.groupId}`);
-
-  // Add the new group to our local list
-  if (!groups.find((g) => g.groupId === message.groupId)) {
-    groups.push({
-      groupId: message.groupId,
-      groupName: `Group ${message.groupId}`,
-    });
-  }
-
-  rl.prompt();
+  console.log(
+    `💡 To join this group, use option 2 and enter the group ID: ${message.groupId}`
+  );
 }
 
 function handleSuccess(message: SuccessResponse) {
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
   console.log(`\n✅ ${message.msg}`);
-  rl.prompt();
+
+  // Check if this is a group join success message and we have a pending join
+  if (message.msg.includes("has joined the group") && pendingGroupJoin) {
+    const match = message.msg.match(/User (\w+) has joined the group/);
+    if (match && match[1] === username) {
+      // Add the group to our local list immediately
+      if (!groups.find((g) => g.groupId === pendingGroupJoin)) {
+        groups.push({
+          groupId: pendingGroupJoin!,
+          groupName: `Group ${pendingGroupJoin}`,
+        });
+        console.log(`✅ You are now a member of group ${pendingGroupJoin}`);
+        console.log(
+          `💬 You can now send messages to this group using option 3!`
+        );
+      }
+      pendingGroupJoin = null; // Clear the pending join
+    }
+  }
 }
 
 function handleGroupMemberJoined(message: GroupMemberJoinedResponse) {
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
   console.log(`\n👥 ${message.username} joined group: ${message.groupId}`);
 
   // Add group to our list if we just joined it
@@ -422,18 +429,15 @@ function handleGroupMemberJoined(message: GroupMemberJoinedResponse) {
       groupId: message.groupId,
       groupName: `Group ${message.groupId}`,
     });
+    console.log(`✅ You are now a member of group ${message.groupId}`);
+    console.log(`💬 You can now send messages to this group using option 3!`);
   }
-
-  rl.prompt();
 }
 
 function handleGroupChat(message: GroupChatResponse) {
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
   console.log(
     `\n📩 Group [${message.groupId}] ${message.from}: ${message.content}`
   );
-  rl.prompt();
 }
 
 function handleGroupChatHistory(message: GroupChatHistoryResponse) {
@@ -453,17 +457,11 @@ function handleGroupChatHistory(message: GroupChatHistoryResponse) {
 }
 
 function handleInfo(message: InfoResponse) {
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
   console.log(`\nℹ️ ${message.msg}`);
-  rl.prompt();
 }
 
 function handleError(message: ErrorResponse) {
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
   console.log(`\n❌ Error: ${message.msg}`);
-  rl.prompt();
 }
 
 function showMainMenu() {
@@ -485,7 +483,9 @@ async function mainMenu(ws: WebSocket): Promise<void> {
   }
 
   showMainMenu();
+  awaitingInput = true;
   const choice = await question("\nChoose an option (1-7): ");
+  awaitingInput = false;
 
   switch (choice) {
     case "1":
@@ -521,7 +521,7 @@ async function mainMenu(ws: WebSocket): Promise<void> {
 
     default:
       console.log("❌ Invalid option. Please try again.");
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
   // Continue menu loop
@@ -533,7 +533,7 @@ async function handleCreateGroup(ws: WebSocket) {
 
   if (!groupName.trim()) {
     console.log("❌ Group name cannot be empty!");
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return;
   }
 
@@ -546,7 +546,13 @@ async function handleCreateGroup(ws: WebSocket) {
   );
 
   console.log(`🔄 Creating group "${groupName.trim()}"...`);
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  console.log(
+    "💡 Note: Creating a group doesn't automatically join you to it."
+  );
+  console.log(
+    "   You'll need to join the group manually using the group ID provided."
+  );
+  await new Promise((resolve) => setTimeout(resolve, 3000)); // Give time to see the message
 }
 
 async function handleJoinGroup(ws: WebSocket) {
@@ -554,15 +560,18 @@ async function handleJoinGroup(ws: WebSocket) {
 
   if (!groupId.trim()) {
     console.log("❌ Group ID cannot be empty!");
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return;
   }
 
   if (groups.find((g) => g.groupId === groupId.trim())) {
     console.log(`❌ You are already a member of group ${groupId.trim()}!`);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return;
   }
+
+  // Track the group we're trying to join
+  pendingGroupJoin = groupId.trim();
 
   ws.send(
     JSON.stringify({
@@ -573,7 +582,8 @@ async function handleJoinGroup(ws: WebSocket) {
   );
 
   console.log(`🔄 Joining group ${groupId.trim()}...`);
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  console.log("⏳ Waiting for confirmation...");
+  await new Promise((resolve) => setTimeout(resolve, 3000)); // Give time for response
 }
 
 async function handleSendGroupMessage(ws: WebSocket) {
@@ -673,7 +683,7 @@ async function handleListGroups() {
   }
 
   console.log("=".repeat(40));
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 }
 
 async function handleAccountInfo() {
@@ -684,7 +694,7 @@ async function handleAccountInfo() {
   console.log(`Friends: ${friendsMap.size}`);
   console.log(`Active Chats: ${chatIds.length}`);
   console.log("=".repeat(30));
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 }
 
 // Handle Ctrl+C gracefully
