@@ -10,6 +10,7 @@ import {
 } from "../../types/messageTypes";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
+import { generateChatId } from "../../utils/chatId";
 
 export async function newOnetoOneChatHandler(
   ws: WebSocket,
@@ -77,18 +78,20 @@ async function notifyNewChatCreated(
 ): Promise<void> {
   try {
     const recipientSocket = mapUserToSocket.get(toUsername);
-
+    const chatId = generateChatId(fromUsername, toUsername);
     if (recipientSocket) {
       WsResponse.custom(recipientSocket, {
         type: "NEW_ONE_TO_ONE_CHAT_AP",
         from: fromUsername,
         msg: `First message from ${fromUsername}.`,
+        chatId: chatId,
       });
-
+      
       WsResponse.custom(senderSocket, {
         type: "NEW_ONE_TO_ONE_CHAT_AP",
         to: toUsername,
         msg: `Chat request sent to ${toUsername}.`,
+        chatId: chatId,
       });
     } else {
       WsResponse.info(senderSocket, `User ${toUsername} is not online.`);

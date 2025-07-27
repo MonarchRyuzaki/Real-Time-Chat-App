@@ -31,6 +31,7 @@ export interface NewOneToOneChatApprovalResponse extends BaseResponse {
   from?: string;
   to?: string;
   msg?: string;
+  chatId?: string;
 }
 
 export interface MessageResponse extends BaseResponse {
