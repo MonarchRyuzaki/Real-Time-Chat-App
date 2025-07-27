@@ -14,20 +14,20 @@ datasource db {
 model User {
   username        String            @id
   password        String
-  friendships     Friendship[]      @relation("UserFriendships")
-  friendOf        Friendship[]      @relation("FriendUserFriendships")
+  friendships1    Friendship[]      @relation("User1Friendship")
+  friendships2    Friendship[]      @relation("User2Friendship")
   groupMembership GroupMembership[]
   createdGroups   Group[]           @relation("GroupCreator")
 }
 
 model Friendship {
-  id        Int    @id @default(autoincrement())
-  user      String
-  userRel   User   @relation("UserFriendships", fields: [user], references: [username])
-  friend    String
-  friendRel User   @relation("FriendUserFriendships", fields: [friend], references: [username])
+  chatId   String @id
+  user1    String
+  user2    String
+  user1Rel User   @relation("User1Friendship", fields: [user1], references: [username])
+  user2Rel User   @relation("User2Friendship", fields: [user2], references: [username])
 
-  @@unique([user, friend])
+  @@unique([user1, user2])
 }
 
 model Group {

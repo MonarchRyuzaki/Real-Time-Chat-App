@@ -126,9 +126,9 @@ exports.Prisma.UserScalarFieldEnum = {
 };
 
 exports.Prisma.FriendshipScalarFieldEnum = {
-  id: 'id',
-  user: 'user',
-  friend: 'friend'
+  chatId: 'chatId',
+  user1: 'user1',
+  user2: 'user2'
 };
 
 exports.Prisma.GroupScalarFieldEnum = {
