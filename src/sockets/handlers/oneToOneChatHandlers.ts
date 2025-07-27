@@ -67,6 +67,7 @@ export async function newOnetoOneChatHandler(
           WsResponse.custom(recipientSocket, {
             type: "NEW_ONE_TO_ONE_CHAT_AP",
             from: fromUsername,
+            msg: `First message from ${fromUsername}.`
           });
           WsResponse.custom(ws, {
             type: "NEW_ONE_TO_ONE_CHAT_AP",
