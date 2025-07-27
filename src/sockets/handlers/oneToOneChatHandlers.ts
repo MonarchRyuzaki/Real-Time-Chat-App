@@ -8,9 +8,9 @@ import {
   NewOneToOneChatMessage,
   OneToOneChatMessage,
 } from "../../types/messageTypes";
+import { generateChatId } from "../../utils/chatId";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
-import { generateChatId } from "../../utils/chatId";
 
 export async function newOnetoOneChatHandler(
   ws: WebSocket,
@@ -29,13 +29,11 @@ export async function newOnetoOneChatHandler(
 
   try {
     const prisma = getPrismaClient();
+    const existingChatId = generateChatId(fromUsername, toUsername);
 
     const existingChat = await prisma.friendship.findFirst({
       where: {
-        OR: [
-          { user: fromUsername, friend: toUsername },
-          { user: toUsername, friend: fromUsername },
-        ],
+        chatId: existingChatId,
       },
     });
 
@@ -44,23 +42,15 @@ export async function newOnetoOneChatHandler(
       return;
     }
 
-    await Promise.all([
-      prisma.friendship.create({
-        data: {
-          user: fromUsername,
-          friend: toUsername,
-        },
-      }),
-      prisma.friendship.create({
-        data: {
-          user: toUsername,
-          friend: fromUsername,
-        },
-      }),
-    ]);
-
+    prisma.friendship.create({
+      data: {
+        chatId: existingChatId,
+        user1: existingChatId.split("-")[0],
+        user2: existingChatId.split("-")[1],
+      },
+    });
     // Notify both users about the new chat
-    await notifyNewChatCreated(fromUsername, toUsername, ws);
+    await notifyNewChatCreated(fromUsername, toUsername, existingChatId, ws);
 
     console.log(
       `New one-to-one chat created between ${fromUsername} and ${toUsername}`
@@ -74,11 +64,11 @@ export async function newOnetoOneChatHandler(
 async function notifyNewChatCreated(
   fromUsername: string,
   toUsername: string,
+  chatId: string,
   senderSocket: WebSocket
 ): Promise<void> {
   try {
     const recipientSocket = mapUserToSocket.get(toUsername);
-    const chatId = generateChatId(fromUsername, toUsername);
     if (recipientSocket) {
       WsResponse.custom(recipientSocket, {
         type: "NEW_ONE_TO_ONE_CHAT_AP",
@@ -86,7 +76,7 @@ async function notifyNewChatCreated(
         msg: `First message from ${fromUsername}.`,
         chatId: chatId,
       });
-      
+
       WsResponse.custom(senderSocket, {
         type: "NEW_ONE_TO_ONE_CHAT_AP",
         to: toUsername,

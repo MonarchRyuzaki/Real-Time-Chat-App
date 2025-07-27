@@ -100,7 +100,8 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
       where: { username: username },
       include: {
         groupMembership: true,
-        friendships: true,
+        friendships1: true,
+        friendships2: true,
       },
     });
 
@@ -111,7 +112,9 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
 
     WsResponse.custom(ws, {
       type: "INIT_DATA",
-      chatIds: user.friendships.map((friendship) => friendship.friend) || [],
+      chatIds: user.friendships1
+        .map((f) => f.chatId)
+        .concat(user.friendships2.map((f) => f.chatId)),
       groups: user.groupMembership.map((group) => group.id) || [],
     });
 
