@@ -1,5 +1,4 @@
 import { WebSocket, WebSocketServer } from "ws";
-import { userExists } from "../prisma/userExists";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
 import { getPrismaClient } from "../services/prisma";
 import { MessageHandlerMap } from "../types/handlerTypes";
