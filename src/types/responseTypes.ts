@@ -23,7 +23,7 @@ export interface SuccessResponse extends BaseResponse {
 export interface InitDataResponse extends BaseResponse {
   type: "INIT_DATA";
   chatIds: string[];
-  groups: number[];
+  groups: string[]; // Changed from number[] to string[] to match actual group IDs
 }
 
 export interface NewOneToOneChatApprovalResponse extends BaseResponse {

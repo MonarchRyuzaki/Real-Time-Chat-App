@@ -114,7 +114,7 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
       chatIds: user.friendships1
         .map((f) => f.chatId)
         .concat(user.friendships2.map((f) => f.chatId)),
-      groups: user.groupMembership.map((group) => group.id) || [],
+      groups: user.groupMembership.map((group) => group.group) || [], // Changed from group.id to group.group
     });
 
     console.log(`Chat handler initialized for user: ${username}`);

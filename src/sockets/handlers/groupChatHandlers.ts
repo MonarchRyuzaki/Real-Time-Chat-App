@@ -1,7 +1,6 @@
 import { WebSocket } from "ws";
 import { getGroupChatMessage } from "../../cassandra/get_group_chat_message";
 import { insertGroupChatMessage } from "../../cassandra/insert_group_chat_message";
-import { mockGroups } from "../../mockData";
 import { mapUserToSocket } from "../../server/ws";
 import { getPrismaClient } from "../../services/prisma";
 import {
@@ -197,14 +196,16 @@ async function broadcastGroupMessage(
   groupId: string,
   messageContent: string
 ): Promise<void> {
-  if (!groupChat.members || !Array.isArray(groupChat.members)) {
+  if (!groupChat || !groupChat.members || !Array.isArray(groupChat.members)) {
     return;
   }
 
-  groupChat.members.forEach((member: string) => {
-    if (member === fromUsername) return; // Don't send to sender
+  groupChat.members.forEach((member: any) => {
+    // member is a GroupMembership object with a 'user' field
+    const memberUsername = member.user;
+    if (memberUsername === fromUsername) return; // Don't send to sender
 
-    const memberSocket = mapUserToSocket.get(member);
+    const memberSocket = mapUserToSocket.get(memberUsername);
     if (memberSocket) {
       try {
         WsResponse.custom(memberSocket, {
@@ -215,7 +216,7 @@ async function broadcastGroupMessage(
         });
       } catch (error) {
         console.error(
-          `Error sending message to group member ${member}:`,
+          `Error sending message to group member ${memberUsername}:`,
           error
         );
       }
