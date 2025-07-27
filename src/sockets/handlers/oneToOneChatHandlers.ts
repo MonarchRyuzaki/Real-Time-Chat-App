@@ -42,7 +42,7 @@ export async function newOnetoOneChatHandler(
       return;
     }
 
-    prisma.friendship.create({
+    await prisma.friendship.create({
       data: {
         chatId: existingChatId,
         user1: existingChatId.split("-")[0],
