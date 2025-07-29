@@ -51,7 +51,6 @@ model GroupMembership {
 
 model OfflineMessages {
   username     String
-  chatId       String
   messageId    String
   partitionKey String
   messageType  MessageType
