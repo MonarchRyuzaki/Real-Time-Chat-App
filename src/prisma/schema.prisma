@@ -21,11 +21,11 @@ model User {
 }
 
 model Friendship {
-  chatId String @id
-  user1 String
-  user2 String
-  user1Rel User @relation("User1Friendship", fields: [user1], references: [username])
-  user2Rel User @relation("User2Friendship", fields: [user2], references: [username])
+  chatId   String @id
+  user1    String
+  user2    String
+  user1Rel User   @relation("User1Friendship", fields: [user1], references: [username])
+  user2Rel User   @relation("User2Friendship", fields: [user2], references: [username])
 
   @@unique([user1, user2])
 }
@@ -46,4 +46,18 @@ model GroupMembership {
   groupRel Group  @relation(fields: [group], references: [groupId])
 
   @@unique([user, group])
+}
+
+model OfflineMessages {
+  username     String
+  messageId    String
+  partitionKey String
+  messageType  MessageType
+
+  @@id([username, messageId])
+}
+
+enum MessageType {
+  ONE_TO_ONE
+  GROUP
 }
