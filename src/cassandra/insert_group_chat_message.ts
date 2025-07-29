@@ -1,10 +1,10 @@
 import { getCassandraClient } from "../services/cassandra";
-import { snowflakeIdGenerator } from "../utils/snowflake";
 
 export async function insertGroupChatMessage(
   groupId: string,
   from: string,
-  content: string
+  content: string,
+  messageId: string,
 ): Promise<void> {
   if (!groupId || !from || !content) {
     const missingFields = [];
@@ -21,7 +21,6 @@ export async function insertGroupChatMessage(
 
   const query =
     "INSERT INTO group_message_by_group_id (group_id, message_id, message_from, message_text) VALUES (?, ?, ?, ?)";
-  const messageId = snowflakeIdGenerator();
 
   try {
     await cassandraClient.execute(

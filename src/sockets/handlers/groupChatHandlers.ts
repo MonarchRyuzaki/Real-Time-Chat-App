@@ -172,16 +172,17 @@ export async function groupChatHandler(
       include: { members: true },
     });
 
-    // Save message to database
-    await insertGroupChatMessage(groupId, fromUsername, messageContent);
-
-    // Broadcast message to group members
-    await broadcastGroupMessage(
-      groupChat,
-      fromUsername,
-      groupId,
-      messageContent
-    );
+    const messageId = snowflakeIdGenerator();
+    await Promise.all([
+      insertGroupChatMessage(groupId, fromUsername, messageContent, messageId),
+      broadcastGroupMessage(
+        groupChat,
+        fromUsername,
+        groupId,
+        messageId,
+        messageContent
+      ),
+    ]);
 
     console.log(`Group message sent by ${fromUsername} to group ${groupId}`);
   } catch (error) {
@@ -194,32 +195,43 @@ async function broadcastGroupMessage(
   groupChat: any,
   fromUsername: string,
   groupId: string,
+  messageId: string,
   messageContent: string
 ): Promise<void> {
   if (!groupChat || !groupChat.members || !Array.isArray(groupChat.members)) {
     return;
   }
 
-  groupChat.members.forEach((member: any) => {
+  groupChat.members.forEach(async (member: any) => {
     // member is a GroupMembership object with a 'user' field
     const memberUsername = member.user;
     if (memberUsername === fromUsername) return; // Don't send to sender
 
     const memberSocket = mapUserToSocket.get(memberUsername);
-    if (memberSocket) {
-      try {
-        WsResponse.custom(memberSocket, {
-          type: "GROUP_CHAT",
-          from: fromUsername,
-          groupId,
-          content: messageContent,
-        });
-      } catch (error) {
-        console.error(
-          `Error sending message to group member ${memberUsername}:`,
-          error
-        );
-      }
+    if (!memberSocket) {
+      const prisma = getPrismaClient();
+      await prisma.offlineMessages.create({
+        data: {
+          username: memberUsername,
+          messageId,
+          partitionKey: groupId,
+          messageType: "GROUP",
+        },
+      });
+      return;
+    }
+    try {
+      WsResponse.custom(memberSocket, {
+        type: "GROUP_CHAT",
+        from: fromUsername,
+        groupId,
+        content: messageContent,
+      });
+    } catch (error) {
+      console.error(
+        `Error sending message to group member ${memberUsername}:`,
+        error
+      );
     }
   });
 }
