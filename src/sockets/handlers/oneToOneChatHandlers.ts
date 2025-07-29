@@ -9,6 +9,7 @@ import {
   OneToOneChatMessage,
 } from "../../types/messageTypes";
 import { generateChatId } from "../../utils/chatId";
+import { snowflakeIdGenerator } from "../../utils/snowflake";
 import { WsResponse } from "../../utils/wsResponse";
 import { WsValidation } from "../../utils/wsValidation";
 
@@ -146,10 +147,26 @@ export async function oneToOneChatHandler(
 
   try {
     // Store message in Cassandra
-    await insertOneToOneChat(chatId, fromUsername, toUsername, messageContent);
+    const messageId = snowflakeIdGenerator();
+    await Promise.all([
+      insertOneToOneChat(
+        chatId,
+        fromUsername,
+        toUsername,
+        messageContent,
+        messageId
+      ),
 
-    // Deliver message to recipient if online
-    await deliverMessage(fromUsername, toUsername, messageContent, chatId, ws);
+      // Deliver message to recipient if online
+      deliverMessage(
+        fromUsername,
+        toUsername,
+        messageContent,
+        chatId,
+        messageId,
+        ws
+      ),
+    ]);
 
     console.log(
       `Message sent from ${fromUsername} to ${toUsername} in chat ${chatId}`
@@ -165,16 +182,22 @@ async function deliverMessage(
   toUsername: string,
   messageContent: string,
   chatId: string,
+  messageId: string,
   senderSocket: WebSocket
 ): Promise<void> {
   try {
     const recipientSocket = mapUserToSocket.get(toUsername);
 
     if (!recipientSocket) {
-      WsResponse.info(
-        senderSocket,
-        `User ${toUsername} is not online. Message stored for later delivery.`
-      );
+      const prisma = getPrismaClient();
+      await prisma.offlineMessages.create({
+        data: {
+          username: toUsername,
+          messageId: messageId,
+          partitionKey: chatId,
+          messageType: "ONE_TO_ONE",
+        },
+      });
       return;
     }
 

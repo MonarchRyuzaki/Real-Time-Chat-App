@@ -1,18 +1,19 @@
 import { getCassandraClient } from "../services/cassandra";
-import { snowflakeIdGenerator } from "../utils/snowflake";
 
 export async function insertOneToOneChat(
   chatId: string,
   from: string,
   to: string,
-  content: string
+  content: string,
+  messageId: string
 ): Promise<void> {
-  if (!chatId || !from || !to || !content) {
+  if (!chatId || !from || !to || !content || !messageId) {
     const missingFields = [];
     if (!chatId) missingFields.push("chatId");
     if (!from) missingFields.push("from");
     if (!to) missingFields.push("to");
     if (!content) missingFields.push("content");
+    if (!messageId) missingFields.push("messageId");
     throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
   }
 
@@ -23,7 +24,6 @@ export async function insertOneToOneChat(
 
   const query =
     "INSERT INTO one_to_one_message_by_chat_id (chat_id, message_id, message_from, message_text, message_to) VALUES (?, ?, ?, ?, ?)";
-  const messageId = snowflakeIdGenerator();
 
   try {
     await cassandraClient.execute(
