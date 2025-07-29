@@ -143,6 +143,13 @@ exports.Prisma.GroupMembershipScalarFieldEnum = {
   group: 'group'
 };
 
+exports.Prisma.OfflineMessagesScalarFieldEnum = {
+  username: 'username',
+  messageId: 'messageId',
+  partitionKey: 'partitionKey',
+  messageType: 'messageType'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -152,13 +159,17 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
-
+exports.MessageType = exports.$Enums.MessageType = {
+  ONE_TO_ONE: 'ONE_TO_ONE',
+  GROUP: 'GROUP'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
   Friendship: 'Friendship',
   Group: 'Group',
-  GroupMembership: 'GroupMembership'
+  GroupMembership: 'GroupMembership',
+  OfflineMessages: 'OfflineMessages'
 };
 
 /**

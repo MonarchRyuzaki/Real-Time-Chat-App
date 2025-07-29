@@ -33,6 +33,28 @@ export type Group = $Result.DefaultSelection<Prisma.$GroupPayload>
  * 
  */
 export type GroupMembership = $Result.DefaultSelection<Prisma.$GroupMembershipPayload>
+/**
+ * Model OfflineMessages
+ * 
+ */
+export type OfflineMessages = $Result.DefaultSelection<Prisma.$OfflineMessagesPayload>
+
+/**
+ * Enums
+ */
+export namespace $Enums {
+  export const MessageType: {
+  ONE_TO_ONE: 'ONE_TO_ONE',
+  GROUP: 'GROUP'
+};
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType]
+
+}
+
+export type MessageType = $Enums.MessageType
+
+export const MessageType: typeof $Enums.MessageType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -198,6 +220,16 @@ export class PrismaClient<
     * ```
     */
   get groupMembership(): Prisma.GroupMembershipDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.offlineMessages`: Exposes CRUD operations for the **OfflineMessages** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OfflineMessages
+    * const offlineMessages = await prisma.offlineMessages.findMany()
+    * ```
+    */
+  get offlineMessages(): Prisma.OfflineMessagesDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -641,7 +673,8 @@ export namespace Prisma {
     User: 'User',
     Friendship: 'Friendship',
     Group: 'Group',
-    GroupMembership: 'GroupMembership'
+    GroupMembership: 'GroupMembership',
+    OfflineMessages: 'OfflineMessages'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -660,7 +693,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "friendship" | "group" | "groupMembership"
+      modelProps: "user" | "friendship" | "group" | "groupMembership" | "offlineMessages"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -960,6 +993,80 @@ export namespace Prisma {
           }
         }
       }
+      OfflineMessages: {
+        payload: Prisma.$OfflineMessagesPayload<ExtArgs>
+        fields: Prisma.OfflineMessagesFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OfflineMessagesFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OfflineMessagesFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>
+          }
+          findFirst: {
+            args: Prisma.OfflineMessagesFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OfflineMessagesFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>
+          }
+          findMany: {
+            args: Prisma.OfflineMessagesFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>[]
+          }
+          create: {
+            args: Prisma.OfflineMessagesCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>
+          }
+          createMany: {
+            args: Prisma.OfflineMessagesCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OfflineMessagesCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>[]
+          }
+          delete: {
+            args: Prisma.OfflineMessagesDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>
+          }
+          update: {
+            args: Prisma.OfflineMessagesUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>
+          }
+          deleteMany: {
+            args: Prisma.OfflineMessagesDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OfflineMessagesUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OfflineMessagesUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>[]
+          }
+          upsert: {
+            args: Prisma.OfflineMessagesUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfflineMessagesPayload>
+          }
+          aggregate: {
+            args: Prisma.OfflineMessagesAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOfflineMessages>
+          }
+          groupBy: {
+            args: Prisma.OfflineMessagesGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OfflineMessagesGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OfflineMessagesCountArgs<ExtArgs>
+            result: $Utils.Optional<OfflineMessagesCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1048,6 +1155,7 @@ export namespace Prisma {
     friendship?: FriendshipOmit
     group?: GroupOmit
     groupMembership?: GroupMembershipOmit
+    offlineMessages?: OfflineMessagesOmit
   }
 
   /* Types for Logging */
@@ -1146,6 +1254,7 @@ export namespace Prisma {
     friendships2: number
     groupMembership: number
     createdGroups: number
+    OfflineMessages: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1153,6 +1262,7 @@ export namespace Prisma {
     friendships2?: boolean | UserCountOutputTypeCountFriendships2Args
     groupMembership?: boolean | UserCountOutputTypeCountGroupMembershipArgs
     createdGroups?: boolean | UserCountOutputTypeCountCreatedGroupsArgs
+    OfflineMessages?: boolean | UserCountOutputTypeCountOfflineMessagesArgs
   }
 
   // Custom InputTypes
@@ -1192,6 +1302,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountCreatedGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountOfflineMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OfflineMessagesWhereInput
   }
 
 
@@ -1374,6 +1491,7 @@ export namespace Prisma {
     friendships2?: boolean | User$friendships2Args<ExtArgs>
     groupMembership?: boolean | User$groupMembershipArgs<ExtArgs>
     createdGroups?: boolean | User$createdGroupsArgs<ExtArgs>
+    OfflineMessages?: boolean | User$OfflineMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1398,6 +1516,7 @@ export namespace Prisma {
     friendships2?: boolean | User$friendships2Args<ExtArgs>
     groupMembership?: boolean | User$groupMembershipArgs<ExtArgs>
     createdGroups?: boolean | User$createdGroupsArgs<ExtArgs>
+    OfflineMessages?: boolean | User$OfflineMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1410,6 +1529,7 @@ export namespace Prisma {
       friendships2: Prisma.$FriendshipPayload<ExtArgs>[]
       groupMembership: Prisma.$GroupMembershipPayload<ExtArgs>[]
       createdGroups: Prisma.$GroupPayload<ExtArgs>[]
+      OfflineMessages: Prisma.$OfflineMessagesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       username: string
@@ -1812,6 +1932,7 @@ export namespace Prisma {
     friendships2<T extends User$friendships2Args<ExtArgs> = {}>(args?: Subset<T, User$friendships2Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendshipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     groupMembership<T extends User$groupMembershipArgs<ExtArgs> = {}>(args?: Subset<T, User$groupMembershipArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdGroups<T extends User$createdGroupsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    OfflineMessages<T extends User$OfflineMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$OfflineMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2324,6 +2445,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
+  }
+
+  /**
+   * User.OfflineMessages
+   */
+  export type User$OfflineMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    where?: OfflineMessagesWhereInput
+    orderBy?: OfflineMessagesOrderByWithRelationInput | OfflineMessagesOrderByWithRelationInput[]
+    cursor?: OfflineMessagesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OfflineMessagesScalarFieldEnum | OfflineMessagesScalarFieldEnum[]
   }
 
   /**
@@ -5522,6 +5667,1051 @@ export namespace Prisma {
 
 
   /**
+   * Model OfflineMessages
+   */
+
+  export type AggregateOfflineMessages = {
+    _count: OfflineMessagesCountAggregateOutputType | null
+    _min: OfflineMessagesMinAggregateOutputType | null
+    _max: OfflineMessagesMaxAggregateOutputType | null
+  }
+
+  export type OfflineMessagesMinAggregateOutputType = {
+    username: string | null
+    messageId: string | null
+    partitionKey: string | null
+    messageType: $Enums.MessageType | null
+  }
+
+  export type OfflineMessagesMaxAggregateOutputType = {
+    username: string | null
+    messageId: string | null
+    partitionKey: string | null
+    messageType: $Enums.MessageType | null
+  }
+
+  export type OfflineMessagesCountAggregateOutputType = {
+    username: number
+    messageId: number
+    partitionKey: number
+    messageType: number
+    _all: number
+  }
+
+
+  export type OfflineMessagesMinAggregateInputType = {
+    username?: true
+    messageId?: true
+    partitionKey?: true
+    messageType?: true
+  }
+
+  export type OfflineMessagesMaxAggregateInputType = {
+    username?: true
+    messageId?: true
+    partitionKey?: true
+    messageType?: true
+  }
+
+  export type OfflineMessagesCountAggregateInputType = {
+    username?: true
+    messageId?: true
+    partitionKey?: true
+    messageType?: true
+    _all?: true
+  }
+
+  export type OfflineMessagesAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OfflineMessages to aggregate.
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OfflineMessages to fetch.
+     */
+    orderBy?: OfflineMessagesOrderByWithRelationInput | OfflineMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OfflineMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OfflineMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OfflineMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OfflineMessages
+    **/
+    _count?: true | OfflineMessagesCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OfflineMessagesMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OfflineMessagesMaxAggregateInputType
+  }
+
+  export type GetOfflineMessagesAggregateType<T extends OfflineMessagesAggregateArgs> = {
+        [P in keyof T & keyof AggregateOfflineMessages]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOfflineMessages[P]>
+      : GetScalarType<T[P], AggregateOfflineMessages[P]>
+  }
+
+
+
+
+  export type OfflineMessagesGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OfflineMessagesWhereInput
+    orderBy?: OfflineMessagesOrderByWithAggregationInput | OfflineMessagesOrderByWithAggregationInput[]
+    by: OfflineMessagesScalarFieldEnum[] | OfflineMessagesScalarFieldEnum
+    having?: OfflineMessagesScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OfflineMessagesCountAggregateInputType | true
+    _min?: OfflineMessagesMinAggregateInputType
+    _max?: OfflineMessagesMaxAggregateInputType
+  }
+
+  export type OfflineMessagesGroupByOutputType = {
+    username: string
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
+    _count: OfflineMessagesCountAggregateOutputType | null
+    _min: OfflineMessagesMinAggregateOutputType | null
+    _max: OfflineMessagesMaxAggregateOutputType | null
+  }
+
+  type GetOfflineMessagesGroupByPayload<T extends OfflineMessagesGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OfflineMessagesGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OfflineMessagesGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OfflineMessagesGroupByOutputType[P]>
+            : GetScalarType<T[P], OfflineMessagesGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OfflineMessagesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    username?: boolean
+    messageId?: boolean
+    partitionKey?: boolean
+    messageType?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["offlineMessages"]>
+
+  export type OfflineMessagesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    username?: boolean
+    messageId?: boolean
+    partitionKey?: boolean
+    messageType?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["offlineMessages"]>
+
+  export type OfflineMessagesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    username?: boolean
+    messageId?: boolean
+    partitionKey?: boolean
+    messageType?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["offlineMessages"]>
+
+  export type OfflineMessagesSelectScalar = {
+    username?: boolean
+    messageId?: boolean
+    partitionKey?: boolean
+    messageType?: boolean
+  }
+
+  export type OfflineMessagesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"username" | "messageId" | "partitionKey" | "messageType", ExtArgs["result"]["offlineMessages"]>
+  export type OfflineMessagesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type OfflineMessagesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type OfflineMessagesIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $OfflineMessagesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OfflineMessages"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      username: string
+      messageId: string
+      partitionKey: string
+      messageType: $Enums.MessageType
+    }, ExtArgs["result"]["offlineMessages"]>
+    composites: {}
+  }
+
+  type OfflineMessagesGetPayload<S extends boolean | null | undefined | OfflineMessagesDefaultArgs> = $Result.GetResult<Prisma.$OfflineMessagesPayload, S>
+
+  type OfflineMessagesCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OfflineMessagesFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OfflineMessagesCountAggregateInputType | true
+    }
+
+  export interface OfflineMessagesDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OfflineMessages'], meta: { name: 'OfflineMessages' } }
+    /**
+     * Find zero or one OfflineMessages that matches the filter.
+     * @param {OfflineMessagesFindUniqueArgs} args - Arguments to find a OfflineMessages
+     * @example
+     * // Get one OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OfflineMessagesFindUniqueArgs>(args: SelectSubset<T, OfflineMessagesFindUniqueArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OfflineMessages that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OfflineMessagesFindUniqueOrThrowArgs} args - Arguments to find a OfflineMessages
+     * @example
+     * // Get one OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OfflineMessagesFindUniqueOrThrowArgs>(args: SelectSubset<T, OfflineMessagesFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OfflineMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesFindFirstArgs} args - Arguments to find a OfflineMessages
+     * @example
+     * // Get one OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OfflineMessagesFindFirstArgs>(args?: SelectSubset<T, OfflineMessagesFindFirstArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OfflineMessages that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesFindFirstOrThrowArgs} args - Arguments to find a OfflineMessages
+     * @example
+     * // Get one OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OfflineMessagesFindFirstOrThrowArgs>(args?: SelectSubset<T, OfflineMessagesFindFirstOrThrowArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OfflineMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.findMany()
+     * 
+     * // Get first 10 OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.findMany({ take: 10 })
+     * 
+     * // Only select the `username`
+     * const offlineMessagesWithUsernameOnly = await prisma.offlineMessages.findMany({ select: { username: true } })
+     * 
+     */
+    findMany<T extends OfflineMessagesFindManyArgs>(args?: SelectSubset<T, OfflineMessagesFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OfflineMessages.
+     * @param {OfflineMessagesCreateArgs} args - Arguments to create a OfflineMessages.
+     * @example
+     * // Create one OfflineMessages
+     * const OfflineMessages = await prisma.offlineMessages.create({
+     *   data: {
+     *     // ... data to create a OfflineMessages
+     *   }
+     * })
+     * 
+     */
+    create<T extends OfflineMessagesCreateArgs>(args: SelectSubset<T, OfflineMessagesCreateArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OfflineMessages.
+     * @param {OfflineMessagesCreateManyArgs} args - Arguments to create many OfflineMessages.
+     * @example
+     * // Create many OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OfflineMessagesCreateManyArgs>(args?: SelectSubset<T, OfflineMessagesCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many OfflineMessages and returns the data saved in the database.
+     * @param {OfflineMessagesCreateManyAndReturnArgs} args - Arguments to create many OfflineMessages.
+     * @example
+     * // Create many OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many OfflineMessages and only return the `username`
+     * const offlineMessagesWithUsernameOnly = await prisma.offlineMessages.createManyAndReturn({
+     *   select: { username: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OfflineMessagesCreateManyAndReturnArgs>(args?: SelectSubset<T, OfflineMessagesCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a OfflineMessages.
+     * @param {OfflineMessagesDeleteArgs} args - Arguments to delete one OfflineMessages.
+     * @example
+     * // Delete one OfflineMessages
+     * const OfflineMessages = await prisma.offlineMessages.delete({
+     *   where: {
+     *     // ... filter to delete one OfflineMessages
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OfflineMessagesDeleteArgs>(args: SelectSubset<T, OfflineMessagesDeleteArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OfflineMessages.
+     * @param {OfflineMessagesUpdateArgs} args - Arguments to update one OfflineMessages.
+     * @example
+     * // Update one OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OfflineMessagesUpdateArgs>(args: SelectSubset<T, OfflineMessagesUpdateArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OfflineMessages.
+     * @param {OfflineMessagesDeleteManyArgs} args - Arguments to filter OfflineMessages to delete.
+     * @example
+     * // Delete a few OfflineMessages
+     * const { count } = await prisma.offlineMessages.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OfflineMessagesDeleteManyArgs>(args?: SelectSubset<T, OfflineMessagesDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OfflineMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OfflineMessagesUpdateManyArgs>(args: SelectSubset<T, OfflineMessagesUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OfflineMessages and returns the data updated in the database.
+     * @param {OfflineMessagesUpdateManyAndReturnArgs} args - Arguments to update many OfflineMessages.
+     * @example
+     * // Update many OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more OfflineMessages and only return the `username`
+     * const offlineMessagesWithUsernameOnly = await prisma.offlineMessages.updateManyAndReturn({
+     *   select: { username: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OfflineMessagesUpdateManyAndReturnArgs>(args: SelectSubset<T, OfflineMessagesUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one OfflineMessages.
+     * @param {OfflineMessagesUpsertArgs} args - Arguments to update or create a OfflineMessages.
+     * @example
+     * // Update or create a OfflineMessages
+     * const offlineMessages = await prisma.offlineMessages.upsert({
+     *   create: {
+     *     // ... data to create a OfflineMessages
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OfflineMessages we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OfflineMessagesUpsertArgs>(args: SelectSubset<T, OfflineMessagesUpsertArgs<ExtArgs>>): Prisma__OfflineMessagesClient<$Result.GetResult<Prisma.$OfflineMessagesPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OfflineMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesCountArgs} args - Arguments to filter OfflineMessages to count.
+     * @example
+     * // Count the number of OfflineMessages
+     * const count = await prisma.offlineMessages.count({
+     *   where: {
+     *     // ... the filter for the OfflineMessages we want to count
+     *   }
+     * })
+    **/
+    count<T extends OfflineMessagesCountArgs>(
+      args?: Subset<T, OfflineMessagesCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OfflineMessagesCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OfflineMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OfflineMessagesAggregateArgs>(args: Subset<T, OfflineMessagesAggregateArgs>): Prisma.PrismaPromise<GetOfflineMessagesAggregateType<T>>
+
+    /**
+     * Group by OfflineMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfflineMessagesGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OfflineMessagesGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OfflineMessagesGroupByArgs['orderBy'] }
+        : { orderBy?: OfflineMessagesGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OfflineMessagesGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOfflineMessagesGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OfflineMessages model
+   */
+  readonly fields: OfflineMessagesFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OfflineMessages.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OfflineMessagesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OfflineMessages model
+   */
+  interface OfflineMessagesFieldRefs {
+    readonly username: FieldRef<"OfflineMessages", 'String'>
+    readonly messageId: FieldRef<"OfflineMessages", 'String'>
+    readonly partitionKey: FieldRef<"OfflineMessages", 'String'>
+    readonly messageType: FieldRef<"OfflineMessages", 'MessageType'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OfflineMessages findUnique
+   */
+  export type OfflineMessagesFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which OfflineMessages to fetch.
+     */
+    where: OfflineMessagesWhereUniqueInput
+  }
+
+  /**
+   * OfflineMessages findUniqueOrThrow
+   */
+  export type OfflineMessagesFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which OfflineMessages to fetch.
+     */
+    where: OfflineMessagesWhereUniqueInput
+  }
+
+  /**
+   * OfflineMessages findFirst
+   */
+  export type OfflineMessagesFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which OfflineMessages to fetch.
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OfflineMessages to fetch.
+     */
+    orderBy?: OfflineMessagesOrderByWithRelationInput | OfflineMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OfflineMessages.
+     */
+    cursor?: OfflineMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OfflineMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OfflineMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OfflineMessages.
+     */
+    distinct?: OfflineMessagesScalarFieldEnum | OfflineMessagesScalarFieldEnum[]
+  }
+
+  /**
+   * OfflineMessages findFirstOrThrow
+   */
+  export type OfflineMessagesFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which OfflineMessages to fetch.
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OfflineMessages to fetch.
+     */
+    orderBy?: OfflineMessagesOrderByWithRelationInput | OfflineMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OfflineMessages.
+     */
+    cursor?: OfflineMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OfflineMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OfflineMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OfflineMessages.
+     */
+    distinct?: OfflineMessagesScalarFieldEnum | OfflineMessagesScalarFieldEnum[]
+  }
+
+  /**
+   * OfflineMessages findMany
+   */
+  export type OfflineMessagesFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which OfflineMessages to fetch.
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OfflineMessages to fetch.
+     */
+    orderBy?: OfflineMessagesOrderByWithRelationInput | OfflineMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OfflineMessages.
+     */
+    cursor?: OfflineMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OfflineMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OfflineMessages.
+     */
+    skip?: number
+    distinct?: OfflineMessagesScalarFieldEnum | OfflineMessagesScalarFieldEnum[]
+  }
+
+  /**
+   * OfflineMessages create
+   */
+  export type OfflineMessagesCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * The data needed to create a OfflineMessages.
+     */
+    data: XOR<OfflineMessagesCreateInput, OfflineMessagesUncheckedCreateInput>
+  }
+
+  /**
+   * OfflineMessages createMany
+   */
+  export type OfflineMessagesCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OfflineMessages.
+     */
+    data: OfflineMessagesCreateManyInput | OfflineMessagesCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OfflineMessages createManyAndReturn
+   */
+  export type OfflineMessagesCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * The data used to create many OfflineMessages.
+     */
+    data: OfflineMessagesCreateManyInput | OfflineMessagesCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OfflineMessages update
+   */
+  export type OfflineMessagesUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * The data needed to update a OfflineMessages.
+     */
+    data: XOR<OfflineMessagesUpdateInput, OfflineMessagesUncheckedUpdateInput>
+    /**
+     * Choose, which OfflineMessages to update.
+     */
+    where: OfflineMessagesWhereUniqueInput
+  }
+
+  /**
+   * OfflineMessages updateMany
+   */
+  export type OfflineMessagesUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OfflineMessages.
+     */
+    data: XOR<OfflineMessagesUpdateManyMutationInput, OfflineMessagesUncheckedUpdateManyInput>
+    /**
+     * Filter which OfflineMessages to update
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * Limit how many OfflineMessages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OfflineMessages updateManyAndReturn
+   */
+  export type OfflineMessagesUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * The data used to update OfflineMessages.
+     */
+    data: XOR<OfflineMessagesUpdateManyMutationInput, OfflineMessagesUncheckedUpdateManyInput>
+    /**
+     * Filter which OfflineMessages to update
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * Limit how many OfflineMessages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OfflineMessages upsert
+   */
+  export type OfflineMessagesUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * The filter to search for the OfflineMessages to update in case it exists.
+     */
+    where: OfflineMessagesWhereUniqueInput
+    /**
+     * In case the OfflineMessages found by the `where` argument doesn't exist, create a new OfflineMessages with this data.
+     */
+    create: XOR<OfflineMessagesCreateInput, OfflineMessagesUncheckedCreateInput>
+    /**
+     * In case the OfflineMessages was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OfflineMessagesUpdateInput, OfflineMessagesUncheckedUpdateInput>
+  }
+
+  /**
+   * OfflineMessages delete
+   */
+  export type OfflineMessagesDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+    /**
+     * Filter which OfflineMessages to delete.
+     */
+    where: OfflineMessagesWhereUniqueInput
+  }
+
+  /**
+   * OfflineMessages deleteMany
+   */
+  export type OfflineMessagesDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OfflineMessages to delete
+     */
+    where?: OfflineMessagesWhereInput
+    /**
+     * Limit how many OfflineMessages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OfflineMessages without action
+   */
+  export type OfflineMessagesDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OfflineMessages
+     */
+    select?: OfflineMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OfflineMessages
+     */
+    omit?: OfflineMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfflineMessagesInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -5568,6 +6758,16 @@ export namespace Prisma {
   };
 
   export type GroupMembershipScalarFieldEnum = (typeof GroupMembershipScalarFieldEnum)[keyof typeof GroupMembershipScalarFieldEnum]
+
+
+  export const OfflineMessagesScalarFieldEnum: {
+    username: 'username',
+    messageId: 'messageId',
+    partitionKey: 'partitionKey',
+    messageType: 'messageType'
+  };
+
+  export type OfflineMessagesScalarFieldEnum = (typeof OfflineMessagesScalarFieldEnum)[keyof typeof OfflineMessagesScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -5620,6 +6820,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'MessageType'
+   */
+  export type EnumMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageType'>
+    
+
+
+  /**
+   * Reference to a field of type 'MessageType[]'
+   */
+  export type ListEnumMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -5646,6 +6860,7 @@ export namespace Prisma {
     friendships2?: FriendshipListRelationFilter
     groupMembership?: GroupMembershipListRelationFilter
     createdGroups?: GroupListRelationFilter
+    OfflineMessages?: OfflineMessagesListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -5655,6 +6870,7 @@ export namespace Prisma {
     friendships2?: FriendshipOrderByRelationAggregateInput
     groupMembership?: GroupMembershipOrderByRelationAggregateInput
     createdGroups?: GroupOrderByRelationAggregateInput
+    OfflineMessages?: OfflineMessagesOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -5667,6 +6883,7 @@ export namespace Prisma {
     friendships2?: FriendshipListRelationFilter
     groupMembership?: GroupMembershipListRelationFilter
     createdGroups?: GroupListRelationFilter
+    OfflineMessages?: OfflineMessagesListRelationFilter
   }, "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -5833,6 +7050,57 @@ export namespace Prisma {
     group?: StringWithAggregatesFilter<"GroupMembership"> | string
   }
 
+  export type OfflineMessagesWhereInput = {
+    AND?: OfflineMessagesWhereInput | OfflineMessagesWhereInput[]
+    OR?: OfflineMessagesWhereInput[]
+    NOT?: OfflineMessagesWhereInput | OfflineMessagesWhereInput[]
+    username?: StringFilter<"OfflineMessages"> | string
+    messageId?: StringFilter<"OfflineMessages"> | string
+    partitionKey?: StringFilter<"OfflineMessages"> | string
+    messageType?: EnumMessageTypeFilter<"OfflineMessages"> | $Enums.MessageType
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type OfflineMessagesOrderByWithRelationInput = {
+    username?: SortOrder
+    messageId?: SortOrder
+    partitionKey?: SortOrder
+    messageType?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type OfflineMessagesWhereUniqueInput = Prisma.AtLeast<{
+    username_messageId?: OfflineMessagesUsernameMessageIdCompoundUniqueInput
+    AND?: OfflineMessagesWhereInput | OfflineMessagesWhereInput[]
+    OR?: OfflineMessagesWhereInput[]
+    NOT?: OfflineMessagesWhereInput | OfflineMessagesWhereInput[]
+    username?: StringFilter<"OfflineMessages"> | string
+    messageId?: StringFilter<"OfflineMessages"> | string
+    partitionKey?: StringFilter<"OfflineMessages"> | string
+    messageType?: EnumMessageTypeFilter<"OfflineMessages"> | $Enums.MessageType
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "username_messageId">
+
+  export type OfflineMessagesOrderByWithAggregationInput = {
+    username?: SortOrder
+    messageId?: SortOrder
+    partitionKey?: SortOrder
+    messageType?: SortOrder
+    _count?: OfflineMessagesCountOrderByAggregateInput
+    _max?: OfflineMessagesMaxOrderByAggregateInput
+    _min?: OfflineMessagesMinOrderByAggregateInput
+  }
+
+  export type OfflineMessagesScalarWhereWithAggregatesInput = {
+    AND?: OfflineMessagesScalarWhereWithAggregatesInput | OfflineMessagesScalarWhereWithAggregatesInput[]
+    OR?: OfflineMessagesScalarWhereWithAggregatesInput[]
+    NOT?: OfflineMessagesScalarWhereWithAggregatesInput | OfflineMessagesScalarWhereWithAggregatesInput[]
+    username?: StringWithAggregatesFilter<"OfflineMessages"> | string
+    messageId?: StringWithAggregatesFilter<"OfflineMessages"> | string
+    partitionKey?: StringWithAggregatesFilter<"OfflineMessages"> | string
+    messageType?: EnumMessageTypeWithAggregatesFilter<"OfflineMessages"> | $Enums.MessageType
+  }
+
   export type UserCreateInput = {
     username: string
     password: string
@@ -5840,6 +7108,7 @@ export namespace Prisma {
     friendships2?: FriendshipCreateNestedManyWithoutUser2RelInput
     groupMembership?: GroupMembershipCreateNestedManyWithoutUserRelInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -5849,6 +7118,7 @@ export namespace Prisma {
     friendships2?: FriendshipUncheckedCreateNestedManyWithoutUser2RelInput
     groupMembership?: GroupMembershipUncheckedCreateNestedManyWithoutUserRelInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -5858,6 +7128,7 @@ export namespace Prisma {
     friendships2?: FriendshipUpdateManyWithoutUser2RelNestedInput
     groupMembership?: GroupMembershipUpdateManyWithoutUserRelNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -5867,6 +7138,7 @@ export namespace Prisma {
     friendships2?: FriendshipUncheckedUpdateManyWithoutUser2RelNestedInput
     groupMembership?: GroupMembershipUncheckedUpdateManyWithoutUserRelNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -6007,6 +7279,54 @@ export namespace Prisma {
     group?: StringFieldUpdateOperationsInput | string
   }
 
+  export type OfflineMessagesCreateInput = {
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
+    user: UserCreateNestedOneWithoutOfflineMessagesInput
+  }
+
+  export type OfflineMessagesUncheckedCreateInput = {
+    username: string
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
+  }
+
+  export type OfflineMessagesUpdateInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+    user?: UserUpdateOneRequiredWithoutOfflineMessagesNestedInput
+  }
+
+  export type OfflineMessagesUncheckedUpdateInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+  }
+
+  export type OfflineMessagesCreateManyInput = {
+    username: string
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
+  }
+
+  export type OfflineMessagesUpdateManyMutationInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+  }
+
+  export type OfflineMessagesUncheckedUpdateManyInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -6040,6 +7360,12 @@ export namespace Prisma {
     none?: GroupWhereInput
   }
 
+  export type OfflineMessagesListRelationFilter = {
+    every?: OfflineMessagesWhereInput
+    some?: OfflineMessagesWhereInput
+    none?: OfflineMessagesWhereInput
+  }
+
   export type FriendshipOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -6049,6 +7375,10 @@ export namespace Prisma {
   }
 
   export type GroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type OfflineMessagesOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -6194,6 +7524,49 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type EnumMessageTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeFilter<$PrismaModel> | $Enums.MessageType
+  }
+
+  export type OfflineMessagesUsernameMessageIdCompoundUniqueInput = {
+    username: string
+    messageId: string
+  }
+
+  export type OfflineMessagesCountOrderByAggregateInput = {
+    username?: SortOrder
+    messageId?: SortOrder
+    partitionKey?: SortOrder
+    messageType?: SortOrder
+  }
+
+  export type OfflineMessagesMaxOrderByAggregateInput = {
+    username?: SortOrder
+    messageId?: SortOrder
+    partitionKey?: SortOrder
+    messageType?: SortOrder
+  }
+
+  export type OfflineMessagesMinOrderByAggregateInput = {
+    username?: SortOrder
+    messageId?: SortOrder
+    partitionKey?: SortOrder
+    messageType?: SortOrder
+  }
+
+  export type EnumMessageTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeWithAggregatesFilter<$PrismaModel> | $Enums.MessageType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMessageTypeFilter<$PrismaModel>
+    _max?: NestedEnumMessageTypeFilter<$PrismaModel>
+  }
+
   export type FriendshipCreateNestedManyWithoutUser1RelInput = {
     create?: XOR<FriendshipCreateWithoutUser1RelInput, FriendshipUncheckedCreateWithoutUser1RelInput> | FriendshipCreateWithoutUser1RelInput[] | FriendshipUncheckedCreateWithoutUser1RelInput[]
     connectOrCreate?: FriendshipCreateOrConnectWithoutUser1RelInput | FriendshipCreateOrConnectWithoutUser1RelInput[]
@@ -6222,6 +7595,13 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
+  export type OfflineMessagesCreateNestedManyWithoutUserInput = {
+    create?: XOR<OfflineMessagesCreateWithoutUserInput, OfflineMessagesUncheckedCreateWithoutUserInput> | OfflineMessagesCreateWithoutUserInput[] | OfflineMessagesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OfflineMessagesCreateOrConnectWithoutUserInput | OfflineMessagesCreateOrConnectWithoutUserInput[]
+    createMany?: OfflineMessagesCreateManyUserInputEnvelope
+    connect?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+  }
+
   export type FriendshipUncheckedCreateNestedManyWithoutUser1RelInput = {
     create?: XOR<FriendshipCreateWithoutUser1RelInput, FriendshipUncheckedCreateWithoutUser1RelInput> | FriendshipCreateWithoutUser1RelInput[] | FriendshipUncheckedCreateWithoutUser1RelInput[]
     connectOrCreate?: FriendshipCreateOrConnectWithoutUser1RelInput | FriendshipCreateOrConnectWithoutUser1RelInput[]
@@ -6248,6 +7628,13 @@ export namespace Prisma {
     connectOrCreate?: GroupCreateOrConnectWithoutCreatorInput | GroupCreateOrConnectWithoutCreatorInput[]
     createMany?: GroupCreateManyCreatorInputEnvelope
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type OfflineMessagesUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<OfflineMessagesCreateWithoutUserInput, OfflineMessagesUncheckedCreateWithoutUserInput> | OfflineMessagesCreateWithoutUserInput[] | OfflineMessagesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OfflineMessagesCreateOrConnectWithoutUserInput | OfflineMessagesCreateOrConnectWithoutUserInput[]
+    createMany?: OfflineMessagesCreateManyUserInputEnvelope
+    connect?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -6310,6 +7697,20 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
+  export type OfflineMessagesUpdateManyWithoutUserNestedInput = {
+    create?: XOR<OfflineMessagesCreateWithoutUserInput, OfflineMessagesUncheckedCreateWithoutUserInput> | OfflineMessagesCreateWithoutUserInput[] | OfflineMessagesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OfflineMessagesCreateOrConnectWithoutUserInput | OfflineMessagesCreateOrConnectWithoutUserInput[]
+    upsert?: OfflineMessagesUpsertWithWhereUniqueWithoutUserInput | OfflineMessagesUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: OfflineMessagesCreateManyUserInputEnvelope
+    set?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    disconnect?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    delete?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    connect?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    update?: OfflineMessagesUpdateWithWhereUniqueWithoutUserInput | OfflineMessagesUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: OfflineMessagesUpdateManyWithWhereWithoutUserInput | OfflineMessagesUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: OfflineMessagesScalarWhereInput | OfflineMessagesScalarWhereInput[]
+  }
+
   export type FriendshipUncheckedUpdateManyWithoutUser1RelNestedInput = {
     create?: XOR<FriendshipCreateWithoutUser1RelInput, FriendshipUncheckedCreateWithoutUser1RelInput> | FriendshipCreateWithoutUser1RelInput[] | FriendshipUncheckedCreateWithoutUser1RelInput[]
     connectOrCreate?: FriendshipCreateOrConnectWithoutUser1RelInput | FriendshipCreateOrConnectWithoutUser1RelInput[]
@@ -6364,6 +7765,20 @@ export namespace Prisma {
     update?: GroupUpdateWithWhereUniqueWithoutCreatorInput | GroupUpdateWithWhereUniqueWithoutCreatorInput[]
     updateMany?: GroupUpdateManyWithWhereWithoutCreatorInput | GroupUpdateManyWithWhereWithoutCreatorInput[]
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type OfflineMessagesUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<OfflineMessagesCreateWithoutUserInput, OfflineMessagesUncheckedCreateWithoutUserInput> | OfflineMessagesCreateWithoutUserInput[] | OfflineMessagesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OfflineMessagesCreateOrConnectWithoutUserInput | OfflineMessagesCreateOrConnectWithoutUserInput[]
+    upsert?: OfflineMessagesUpsertWithWhereUniqueWithoutUserInput | OfflineMessagesUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: OfflineMessagesCreateManyUserInputEnvelope
+    set?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    disconnect?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    delete?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    connect?: OfflineMessagesWhereUniqueInput | OfflineMessagesWhereUniqueInput[]
+    update?: OfflineMessagesUpdateWithWhereUniqueWithoutUserInput | OfflineMessagesUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: OfflineMessagesUpdateManyWithWhereWithoutUserInput | OfflineMessagesUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: OfflineMessagesScalarWhereInput | OfflineMessagesScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutFriendships1Input = {
@@ -6486,6 +7901,24 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type UserCreateNestedOneWithoutOfflineMessagesInput = {
+    create?: XOR<UserCreateWithoutOfflineMessagesInput, UserUncheckedCreateWithoutOfflineMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOfflineMessagesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumMessageTypeFieldUpdateOperationsInput = {
+    set?: $Enums.MessageType
+  }
+
+  export type UserUpdateOneRequiredWithoutOfflineMessagesNestedInput = {
+    create?: XOR<UserCreateWithoutOfflineMessagesInput, UserUncheckedCreateWithoutOfflineMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOfflineMessagesInput
+    upsert?: UserUpsertWithoutOfflineMessagesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOfflineMessagesInput, UserUpdateWithoutOfflineMessagesInput>, UserUncheckedUpdateWithoutOfflineMessagesInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -6553,6 +7986,23 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedEnumMessageTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeFilter<$PrismaModel> | $Enums.MessageType
+  }
+
+  export type NestedEnumMessageTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeWithAggregatesFilter<$PrismaModel> | $Enums.MessageType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMessageTypeFilter<$PrismaModel>
+    _max?: NestedEnumMessageTypeFilter<$PrismaModel>
   }
 
   export type FriendshipCreateWithoutUser1RelInput = {
@@ -6633,6 +8083,28 @@ export namespace Prisma {
 
   export type GroupCreateManyCreatorInputEnvelope = {
     data: GroupCreateManyCreatorInput | GroupCreateManyCreatorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OfflineMessagesCreateWithoutUserInput = {
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
+  }
+
+  export type OfflineMessagesUncheckedCreateWithoutUserInput = {
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
+  }
+
+  export type OfflineMessagesCreateOrConnectWithoutUserInput = {
+    where: OfflineMessagesWhereUniqueInput
+    create: XOR<OfflineMessagesCreateWithoutUserInput, OfflineMessagesUncheckedCreateWithoutUserInput>
+  }
+
+  export type OfflineMessagesCreateManyUserInputEnvelope = {
+    data: OfflineMessagesCreateManyUserInput | OfflineMessagesCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -6727,12 +8199,39 @@ export namespace Prisma {
     createdBy?: StringFilter<"Group"> | string
   }
 
+  export type OfflineMessagesUpsertWithWhereUniqueWithoutUserInput = {
+    where: OfflineMessagesWhereUniqueInput
+    update: XOR<OfflineMessagesUpdateWithoutUserInput, OfflineMessagesUncheckedUpdateWithoutUserInput>
+    create: XOR<OfflineMessagesCreateWithoutUserInput, OfflineMessagesUncheckedCreateWithoutUserInput>
+  }
+
+  export type OfflineMessagesUpdateWithWhereUniqueWithoutUserInput = {
+    where: OfflineMessagesWhereUniqueInput
+    data: XOR<OfflineMessagesUpdateWithoutUserInput, OfflineMessagesUncheckedUpdateWithoutUserInput>
+  }
+
+  export type OfflineMessagesUpdateManyWithWhereWithoutUserInput = {
+    where: OfflineMessagesScalarWhereInput
+    data: XOR<OfflineMessagesUpdateManyMutationInput, OfflineMessagesUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type OfflineMessagesScalarWhereInput = {
+    AND?: OfflineMessagesScalarWhereInput | OfflineMessagesScalarWhereInput[]
+    OR?: OfflineMessagesScalarWhereInput[]
+    NOT?: OfflineMessagesScalarWhereInput | OfflineMessagesScalarWhereInput[]
+    username?: StringFilter<"OfflineMessages"> | string
+    messageId?: StringFilter<"OfflineMessages"> | string
+    partitionKey?: StringFilter<"OfflineMessages"> | string
+    messageType?: EnumMessageTypeFilter<"OfflineMessages"> | $Enums.MessageType
+  }
+
   export type UserCreateWithoutFriendships1Input = {
     username: string
     password: string
     friendships2?: FriendshipCreateNestedManyWithoutUser2RelInput
     groupMembership?: GroupMembershipCreateNestedManyWithoutUserRelInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFriendships1Input = {
@@ -6741,6 +8240,7 @@ export namespace Prisma {
     friendships2?: FriendshipUncheckedCreateNestedManyWithoutUser2RelInput
     groupMembership?: GroupMembershipUncheckedCreateNestedManyWithoutUserRelInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFriendships1Input = {
@@ -6754,6 +8254,7 @@ export namespace Prisma {
     friendships1?: FriendshipCreateNestedManyWithoutUser1RelInput
     groupMembership?: GroupMembershipCreateNestedManyWithoutUserRelInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFriendships2Input = {
@@ -6762,6 +8263,7 @@ export namespace Prisma {
     friendships1?: FriendshipUncheckedCreateNestedManyWithoutUser1RelInput
     groupMembership?: GroupMembershipUncheckedCreateNestedManyWithoutUserRelInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFriendships2Input = {
@@ -6786,6 +8288,7 @@ export namespace Prisma {
     friendships2?: FriendshipUpdateManyWithoutUser2RelNestedInput
     groupMembership?: GroupMembershipUpdateManyWithoutUserRelNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendships1Input = {
@@ -6794,6 +8297,7 @@ export namespace Prisma {
     friendships2?: FriendshipUncheckedUpdateManyWithoutUser2RelNestedInput
     groupMembership?: GroupMembershipUncheckedUpdateManyWithoutUserRelNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutFriendships2Input = {
@@ -6813,6 +8317,7 @@ export namespace Prisma {
     friendships1?: FriendshipUpdateManyWithoutUser1RelNestedInput
     groupMembership?: GroupMembershipUpdateManyWithoutUserRelNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendships2Input = {
@@ -6821,6 +8326,7 @@ export namespace Prisma {
     friendships1?: FriendshipUncheckedUpdateManyWithoutUser1RelNestedInput
     groupMembership?: GroupMembershipUncheckedUpdateManyWithoutUserRelNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -6829,6 +8335,7 @@ export namespace Prisma {
     friendships1?: FriendshipCreateNestedManyWithoutUser1RelInput
     friendships2?: FriendshipCreateNestedManyWithoutUser2RelInput
     groupMembership?: GroupMembershipCreateNestedManyWithoutUserRelInput
+    OfflineMessages?: OfflineMessagesCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -6837,6 +8344,7 @@ export namespace Prisma {
     friendships1?: FriendshipUncheckedCreateNestedManyWithoutUser1RelInput
     friendships2?: FriendshipUncheckedCreateNestedManyWithoutUser2RelInput
     groupMembership?: GroupMembershipUncheckedCreateNestedManyWithoutUserRelInput
+    OfflineMessages?: OfflineMessagesUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
@@ -6880,6 +8388,7 @@ export namespace Prisma {
     friendships1?: FriendshipUpdateManyWithoutUser1RelNestedInput
     friendships2?: FriendshipUpdateManyWithoutUser2RelNestedInput
     groupMembership?: GroupMembershipUpdateManyWithoutUserRelNestedInput
+    OfflineMessages?: OfflineMessagesUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -6888,6 +8397,7 @@ export namespace Prisma {
     friendships1?: FriendshipUncheckedUpdateManyWithoutUser1RelNestedInput
     friendships2?: FriendshipUncheckedUpdateManyWithoutUser2RelNestedInput
     groupMembership?: GroupMembershipUncheckedUpdateManyWithoutUserRelNestedInput
+    OfflineMessages?: OfflineMessagesUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupMembershipUpsertWithWhereUniqueWithoutGroupRelInput = {
@@ -6912,6 +8422,7 @@ export namespace Prisma {
     friendships1?: FriendshipCreateNestedManyWithoutUser1RelInput
     friendships2?: FriendshipCreateNestedManyWithoutUser2RelInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipInput = {
@@ -6920,6 +8431,7 @@ export namespace Prisma {
     friendships1?: FriendshipUncheckedCreateNestedManyWithoutUser1RelInput
     friendships2?: FriendshipUncheckedCreateNestedManyWithoutUser2RelInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    OfflineMessages?: OfflineMessagesUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipInput = {
@@ -6961,6 +8473,7 @@ export namespace Prisma {
     friendships1?: FriendshipUpdateManyWithoutUser1RelNestedInput
     friendships2?: FriendshipUpdateManyWithoutUser2RelNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipInput = {
@@ -6969,6 +8482,7 @@ export namespace Prisma {
     friendships1?: FriendshipUncheckedUpdateManyWithoutUser1RelNestedInput
     friendships2?: FriendshipUncheckedUpdateManyWithoutUser2RelNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    OfflineMessages?: OfflineMessagesUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupUpsertWithoutMembersInput = {
@@ -6994,6 +8508,58 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
   }
 
+  export type UserCreateWithoutOfflineMessagesInput = {
+    username: string
+    password: string
+    friendships1?: FriendshipCreateNestedManyWithoutUser1RelInput
+    friendships2?: FriendshipCreateNestedManyWithoutUser2RelInput
+    groupMembership?: GroupMembershipCreateNestedManyWithoutUserRelInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutOfflineMessagesInput = {
+    username: string
+    password: string
+    friendships1?: FriendshipUncheckedCreateNestedManyWithoutUser1RelInput
+    friendships2?: FriendshipUncheckedCreateNestedManyWithoutUser2RelInput
+    groupMembership?: GroupMembershipUncheckedCreateNestedManyWithoutUserRelInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutOfflineMessagesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutOfflineMessagesInput, UserUncheckedCreateWithoutOfflineMessagesInput>
+  }
+
+  export type UserUpsertWithoutOfflineMessagesInput = {
+    update: XOR<UserUpdateWithoutOfflineMessagesInput, UserUncheckedUpdateWithoutOfflineMessagesInput>
+    create: XOR<UserCreateWithoutOfflineMessagesInput, UserUncheckedCreateWithoutOfflineMessagesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutOfflineMessagesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutOfflineMessagesInput, UserUncheckedUpdateWithoutOfflineMessagesInput>
+  }
+
+  export type UserUpdateWithoutOfflineMessagesInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    friendships1?: FriendshipUpdateManyWithoutUser1RelNestedInput
+    friendships2?: FriendshipUpdateManyWithoutUser2RelNestedInput
+    groupMembership?: GroupMembershipUpdateManyWithoutUserRelNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutOfflineMessagesInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    friendships1?: FriendshipUncheckedUpdateManyWithoutUser1RelNestedInput
+    friendships2?: FriendshipUncheckedUpdateManyWithoutUser2RelNestedInput
+    groupMembership?: GroupMembershipUncheckedUpdateManyWithoutUserRelNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+  }
+
   export type FriendshipCreateManyUser1RelInput = {
     chatId: string
     user2: string
@@ -7012,6 +8578,12 @@ export namespace Prisma {
   export type GroupCreateManyCreatorInput = {
     groupId: string
     groupName: string
+  }
+
+  export type OfflineMessagesCreateManyUserInput = {
+    messageId: string
+    partitionKey: string
+    messageType: $Enums.MessageType
   }
 
   export type FriendshipUpdateWithoutUser1RelInput = {
@@ -7073,6 +8645,24 @@ export namespace Prisma {
   export type GroupUncheckedUpdateManyWithoutCreatorInput = {
     groupId?: StringFieldUpdateOperationsInput | string
     groupName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type OfflineMessagesUpdateWithoutUserInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+  }
+
+  export type OfflineMessagesUncheckedUpdateWithoutUserInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+  }
+
+  export type OfflineMessagesUncheckedUpdateManyWithoutUserInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    partitionKey?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
   export type GroupMembershipCreateManyGroupRelInput = {
