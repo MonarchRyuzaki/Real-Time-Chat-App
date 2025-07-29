@@ -24,6 +24,13 @@ interface InitDataMessage extends BaseMessage {
   type: "INIT_DATA";
   chatIds: string[];
   groups: number[];
+  offlineMessages?: Array<{
+    partitionKey: string;
+    count: number;
+    messageType: "ONE_TO_ONE" | "GROUP";
+    from?: string; // For ONE_TO_ONE messages
+    groupName?: string; // For GROUP messages
+  }>;
 }
 
 interface MessageResponse extends BaseMessage {
@@ -93,7 +100,6 @@ function generateChatId(user1: string, user2: string): string {
 
 // Clear screen and show header
 function showHeader() {
-  console.clear();
   console.log("🚀 Real-Time Chat Application");
   console.log("=".repeat(50));
   if (username) {
@@ -375,11 +381,47 @@ function handleInitData(message: InitDataMessage) {
     );
   }
 
+  // Handle offline messages
+  if (message.offlineMessages && Array.isArray(message.offlineMessages)) {
+    console.log(
+      `📥 You have offline messages from ${message.offlineMessages.length} conversation(s):`
+    );
+    message.offlineMessages.forEach((msg) => {
+      if (msg.messageType === "ONE_TO_ONE") {
+        console.log(
+          `  - 💬 ${msg.count} message(s) from ${msg.from} (Chat: ${msg.partitionKey})`
+        );
+      } else if (msg.messageType === "GROUP") {
+        console.log(
+          `  - 👥 ${msg.count} message(s) from group "${msg.groupName}" (ID: ${msg.partitionKey})`
+        );
+      }
+    });
+
+    // Automatically acknowledge offline messages
+    if (message.offlineMessages.length > 0) {
+      setTimeout(() => {
+        const ws = getCurrentWebSocket();
+        if (ws) {
+          ws.send(JSON.stringify({ type: "OFFLINE_MESSAGES_ACK" }));
+          console.log("📤 Offline messages acknowledged");
+        }
+      }, 1000);
+    }
+  }
+
   if (!isInitialized) {
     isInitialized = true;
     console.log("\n✅ Chat session initialized!");
     setTimeout(() => showMainMenu(), 1000);
   }
+}
+
+// Store current websocket reference for offline message acknowledgment
+let currentWebSocket: WebSocket | null = null;
+
+function getCurrentWebSocket(): WebSocket | null {
+  return currentWebSocket;
 }
 
 function handleMessage(message: MessageResponse) {
@@ -471,6 +513,9 @@ async function init() {
 
     // Connect to WebSocket
     const ws = await connectToWebSocket();
+
+    // Store WebSocket reference for offline message acknowledgment
+    currentWebSocket = ws;
 
     // Set up message handler
     ws.on("message", (data) => handleIncomingMessage(ws, data.toString()));

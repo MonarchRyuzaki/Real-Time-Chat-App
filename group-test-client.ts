@@ -18,6 +18,13 @@ interface InitDataMessage extends BaseMessage {
   type: "INIT_DATA";
   chatIds: string[];
   groups: string[]; // Changed from number[] to string[] to match backend
+  offlineMessages?: Array<{
+    partitionKey: string;
+    count: number;
+    messageType: "ONE_TO_ONE" | "GROUP";
+    from?: string; // For ONE_TO_ONE messages
+    groupName?: string; // For GROUP messages
+  }>;
 }
 
 interface GroupChatCreatedResponse extends BaseMessage {
@@ -378,6 +385,32 @@ function handleInitData(message: InitDataMessage, ws: WebSocket) {
         friendsMap.size > 0 ? Array.from(friendsMap.keys()).join(", ") : "None"
       }`
     );
+  }
+
+  // Handle offline messages
+  if (message.offlineMessages && Array.isArray(message.offlineMessages)) {
+    console.log(
+      `📥 You have offline messages from ${message.offlineMessages.length} conversation(s):`
+    );
+    message.offlineMessages.forEach((msg) => {
+      if (msg.messageType === "ONE_TO_ONE") {
+        console.log(
+          `  - 💬 ${msg.count} message(s) from ${msg.from} (Chat: ${msg.partitionKey})`
+        );
+      } else if (msg.messageType === "GROUP") {
+        console.log(
+          `  - 👥 ${msg.count} message(s) from group "${msg.groupName}" (ID: ${msg.partitionKey})`
+        );
+      }
+    });
+
+    // Automatically acknowledge offline messages
+    if (message.offlineMessages.length > 0) {
+      setTimeout(() => {
+        ws.send(JSON.stringify({ type: "OFFLINE_MESSAGES_ACK" }));
+        console.log("📤 Offline messages acknowledged");
+      }, 1000);
+    }
   }
 
   if (!isInitialized) {
