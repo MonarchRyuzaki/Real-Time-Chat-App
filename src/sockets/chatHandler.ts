@@ -101,6 +101,7 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
         groupMembership: true,
         friendships1: true,
         friendships2: true,
+        OfflineMessages: true,
       },
     });
 
@@ -115,6 +116,11 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
         .map((f) => f.chatId)
         .concat(user.friendships2.map((f) => f.chatId)),
       groups: user.groupMembership.map((group) => group.group) || [], // Changed from group.id to group.group
+      offlineMessages: user.OfflineMessages.map((msg) => ({
+        messageId: msg.messageId,
+        partitionKey: msg.partitionKey,
+        messageType: msg.messageType,
+      })) || [],
     });
 
     console.log(`Chat handler initialized for user: ${username}`);

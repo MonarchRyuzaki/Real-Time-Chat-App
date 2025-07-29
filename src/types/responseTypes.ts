@@ -24,6 +24,11 @@ export interface InitDataResponse extends BaseResponse {
   type: "INIT_DATA";
   chatIds: string[];
   groups: string[]; // Changed from number[] to string[] to match actual group IDs
+  offlineMessages: {
+    messageId: string;
+    partitionKey: string;
+    messageType: string; // Assuming messageType is a string, adjust if it's an enum
+  }[];
 }
 
 export interface NewOneToOneChatApprovalResponse extends BaseResponse {
