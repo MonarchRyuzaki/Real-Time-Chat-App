@@ -24,11 +24,13 @@ export interface InitDataResponse extends BaseResponse {
   type: "INIT_DATA";
   chatIds: string[];
   groups: string[]; // Changed from number[] to string[] to match actual group IDs
-  offlineMessages: {
-    messageId: string;
+  offlineMessages: Array<{
     partitionKey: string;
-    messageType: string; // Assuming messageType is a string, adjust if it's an enum
-  }[];
+    count: number;
+    messageType: string;
+    from?: string; // For ONE_TO_ONE messages
+    groupName?: string; // For GROUP messages
+  }>;
 }
 
 export interface NewOneToOneChatApprovalResponse extends BaseResponse {

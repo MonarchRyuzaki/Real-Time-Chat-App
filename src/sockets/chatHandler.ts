@@ -114,6 +114,50 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
       return;
     }
 
+    // Count and organize offline messages
+    // Later use a thread here
+    const offlineMessageSummary: {
+      [key: string]: {
+        count: number;
+        from?: string;
+        groupName?: string;
+        messageType: string;
+      };
+    } = {};
+
+    for (const msg of user.OfflineMessages) {
+      const key = msg.partitionKey;
+
+      if (!offlineMessageSummary[key]) {
+        offlineMessageSummary[key] = { count: 0, messageType: msg.messageType };
+
+        if (msg.messageType === "ONE_TO_ONE") {
+          // Extract sender from partition key (format: "user1-user2")
+          const users = msg.partitionKey.split("-");
+          const otherUser = users[0] === username ? users[1] : users[0];
+          offlineMessageSummary[key].from = otherUser;
+        } else if (msg.messageType === "GROUP") {
+          // For group messages, find the group name
+          const group = user.groupMembership.find(
+            (gm) => gm.group === msg.partitionKey
+          );
+          if (group) {
+            // Need to fetch the actual group to get the group name
+            const groupData = await prisma.group.findUnique({
+              where: { groupId: msg.partitionKey },
+              select: { groupName: true },
+            });
+            offlineMessageSummary[key].groupName =
+              groupData?.groupName || msg.partitionKey;
+          } else {
+            offlineMessageSummary[key].groupName = msg.partitionKey; // Fallback to group ID
+          }
+        }
+      }
+
+      offlineMessageSummary[key].count++;
+    }
+
     WsResponse.custom(ws, {
       type: "INIT_DATA",
       chatIds: user.friendships1
@@ -121,11 +165,16 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
         .concat(user.friendships2.map((f) => f.chatId)),
       groups: user.groupMembership.map((group) => group.group) || [], // Changed from group.id to group.group
       offlineMessages:
-        user.OfflineMessages.map((msg) => ({
-          messageId: msg.messageId,
-          partitionKey: msg.partitionKey,
-          messageType: msg.messageType,
-        })) || [],
+        Object.entries(offlineMessageSummary).map(
+          ([partitionKey, summary]) => ({
+            partitionKey,
+            count: summary.count,
+            messageType: summary.messageType,
+            ...(summary.messageType === "ONE_TO_ONE"
+              ? { from: summary.from }
+              : { groupName: summary.groupName }),
+          })
+        ) || [],
     });
 
     console.log(`Chat handler initialized for user: ${username}`);
