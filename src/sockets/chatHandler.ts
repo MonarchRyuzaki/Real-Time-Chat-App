@@ -2,7 +2,10 @@ import { WebSocket, WebSocketServer } from "ws";
 import { mapSocketToUser, mapUserToSocket } from "../server/ws";
 import { getPrismaClient } from "../services/prisma";
 import { MessageHandlerMap } from "../types/handlerTypes";
-import { IncomingMessage } from "../types/messageTypes";
+import {
+  IncomingMessage,
+  OfflineMessagesAckMessage,
+} from "../types/messageTypes";
 import { WsResponse } from "../utils/wsResponse";
 import { WsValidation } from "../utils/wsValidation";
 import {
@@ -32,6 +35,7 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer): void {
     JOIN_GROUP_CHAT: joinGroupChatHandler,
     GET_GROUP_CHAT_HISTORY: getGroupChatHistoryHandler,
     GROUP_CHAT: groupChatHandler,
+    OFFLINE_MESSAGES_ACK: offlineMessagesAckHandler,
     DISCONNECT: disconnectHandler,
   };
 
@@ -116,11 +120,12 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
         .map((f) => f.chatId)
         .concat(user.friendships2.map((f) => f.chatId)),
       groups: user.groupMembership.map((group) => group.group) || [], // Changed from group.id to group.group
-      offlineMessages: user.OfflineMessages.map((msg) => ({
-        messageId: msg.messageId,
-        partitionKey: msg.partitionKey,
-        messageType: msg.messageType,
-      })) || [],
+      offlineMessages:
+        user.OfflineMessages.map((msg) => ({
+          messageId: msg.messageId,
+          partitionKey: msg.partitionKey,
+          messageType: msg.messageType,
+        })) || [],
     });
 
     console.log(`Chat handler initialized for user: ${username}`);
@@ -131,6 +136,31 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
       error
     );
     WsResponse.error(ws, "Failed to load chat data.");
+  }
+}
+
+async function offlineMessagesAckHandler(
+  ws: WebSocket,
+  data: OfflineMessagesAckMessage
+): Promise<void> {
+  const username = mapSocketToUser.get(ws);
+  if (!username || !(await WsValidation.validateUser(ws, username))) return;
+
+  try {
+    const prisma = getPrismaClient();
+
+    // Acknowledge offline messages for the user
+    await prisma.offlineMessages.deleteMany({
+      where: {
+        username: username,
+      },
+    });
+
+    WsResponse.success(ws, "Offline messages acknowledged.");
+    console.log(`Offline messages acknowledged for user: ${username}`);
+  } catch (error) {
+    console.error("Error acknowledging offline messages:", error);
+    WsResponse.error(ws, "Failed to acknowledge offline messages.");
   }
 }
 

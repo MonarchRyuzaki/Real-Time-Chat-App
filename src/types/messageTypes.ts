@@ -49,6 +49,10 @@ export interface GetGroupChatHistoryMessage extends BaseMessage {
   groupId: string;
 }
 
+export interface OfflineMessagesAckMessage extends BaseMessage {
+  type: "OFFLINE_MESSAGES_ACK";
+}
+
 export interface DisconnectMessage extends BaseMessage {
   type: "DISCONNECT";
 }
@@ -62,4 +66,5 @@ export type IncomingMessage =
   | JoinGroupChatMessage
   | GroupChatMessage
   | GetGroupChatHistoryMessage
+  | OfflineMessagesAckMessage
   | DisconnectMessage;

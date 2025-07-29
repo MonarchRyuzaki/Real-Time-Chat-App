@@ -8,6 +8,7 @@ import {
   IncomingMessage,
   JoinGroupChatMessage,
   NewOneToOneChatMessage,
+  OfflineMessagesAckMessage,
   OneToOneChatMessage,
 } from "./messageTypes";
 
@@ -27,6 +28,8 @@ export type JoinGroupChatHandler = MessageHandler<JoinGroupChatMessage>;
 export type GroupChatHandler = MessageHandler<GroupChatMessage>;
 export type GetGroupChatHistoryHandler =
   MessageHandler<GetGroupChatHistoryMessage>;
+export type OfflineMessagesAckHandler =
+  MessageHandler<OfflineMessagesAckMessage>;
 export type DisconnectHandler = MessageHandler<DisconnectMessage>;
 
 // Message handler map interface
@@ -38,6 +41,7 @@ export interface MessageHandlerMap {
   JOIN_GROUP_CHAT: JoinGroupChatHandler;
   GET_GROUP_CHAT_HISTORY: GetGroupChatHistoryHandler;
   GROUP_CHAT: GroupChatHandler;
+  OFFLINE_MESSAGES_ACK: OfflineMessagesAckHandler;
   DISCONNECT: DisconnectHandler;
 }
 
