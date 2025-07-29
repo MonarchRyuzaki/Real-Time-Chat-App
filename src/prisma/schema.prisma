@@ -18,6 +18,7 @@ model User {
   friendships2    Friendship[]      @relation("User2Friendship")
   groupMembership GroupMembership[]
   createdGroups   Group[]           @relation("GroupCreator")
+  OfflineMessages OfflineMessages[]
 }
 
 model Friendship {
@@ -53,6 +54,7 @@ model OfflineMessages {
   messageId    String
   partitionKey String
   messageType  MessageType
+  user         User        @relation(fields: [username], references: [username])
 
   @@id([username, messageId])
 }
