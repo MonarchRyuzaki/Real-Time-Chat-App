@@ -18,9 +18,13 @@ export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
     console.log(`Responding to ping ${username}`);
     const client = await getClient();
     if (client) {
-      await client.set(`online_users:${username}`, "1", {
-        EX: 60,
-      });
+      await client
+        .multi()
+        .set(`online_users:${username}`, "1", {
+          EX: 60,
+        })
+        .set(`last_seen:${username}`, new Date().toISOString())
+        .exec();
     }
     ws.isAlive = true;
   });
