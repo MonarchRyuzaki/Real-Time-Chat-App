@@ -25,6 +25,40 @@ function verifyWebSocketToken(req: IncomingMessage): AuthResult {
       error: null,
     };
 
+    // First, try to get token from Authorization header
+    let token = req.headers["authorization"]?.replace("Bearer ", "");
+
+    // If no token in headers, check query parameters
+    if (!token && req.url) {
+      try {
+        // Extract query string from URL (req.url might be "/?authToken=xyz" or "/path?authToken=xyz")
+        const queryString = req.url.includes("?") ? req.url.split("?")[1] : "";
+        if (queryString) {
+          const searchParams = new URLSearchParams(queryString);
+          token = searchParams.get("authToken") || undefined;
+        }
+      } catch (urlError) {
+        console.error("Error parsing URL query parameters:", urlError);
+      }
+    }
+
+    // If still no token, return error
+    if (!token) {
+      return {
+        success: false,
+        error: "No token provided in headers or query params",
+      };
+    }
+
+    // Create a modified request object with the token in headers for verifyToken middleware
+    const modifiedReq = {
+      ...req,
+      headers: {
+        ...req.headers,
+        authorization: `Bearer ${token}`,
+      },
+    };
+
     const mockRes = {
       status: (code: number) => ({
         json: (data: any) => {
@@ -37,11 +71,11 @@ function verifyWebSocketToken(req: IncomingMessage): AuthResult {
     };
 
     const mockNext = () => {
-      authResult = { success: true, username: (req as any).username };
+      authResult = { success: true, username: (modifiedReq as any).username };
     };
 
     try {
-      verifyToken(req as any, mockRes as any, mockNext);
+      verifyToken(modifiedReq as any, mockRes as any, mockNext);
       return authResult;
     } catch (tokenError) {
       console.error("Error in token verification:", tokenError);
@@ -203,7 +237,9 @@ export function closeAllWebSocketServers(): Promise<void> {
     // Force resolve after timeout to prevent hanging
     setTimeout(() => {
       if (closedCount < totalServers) {
-        console.warn("Some WebSocket servers did not close gracefully, forcing shutdown");
+        console.warn(
+          "Some WebSocket servers did not close gracefully, forcing shutdown"
+        );
         activeServers.clear();
         resolve();
       }

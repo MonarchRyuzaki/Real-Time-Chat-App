@@ -1,0 +1,72 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.One To One Chat": 40,
+      "vusers.created": 70,
+      "errors.Unexpected server response: 401": 140,
+      "vusers.failed": 70,
+      "vusers.created_by_name.Group Chat": 30
+    },
+    "rates": {},
+    "firstCounterAt": 1754147330957,
+    "lastCounterAt": 1754147350303,
+    "firstMetricAt": 1754147330957,
+    "lastMetricAt": 1754147350303,
+    "period": 1754147350000,
+    "summaries": {},
+    "histograms": {}
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.One To One Chat": 14,
+        "vusers.created": 24,
+        "errors.Unexpected server response: 401": 46,
+        "vusers.failed": 23,
+        "vusers.created_by_name.Group Chat": 10
+      },
+      "rates": {},
+      "firstCounterAt": 1754147330957,
+      "lastCounterAt": 1754147339964,
+      "firstMetricAt": 1754147330957,
+      "lastMetricAt": 1754147339964,
+      "period": "1754147330000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "errors.Unexpected server response: 401": 84,
+        "vusers.failed": 42,
+        "vusers.created_by_name.One To One Chat": 23,
+        "vusers.created": 42,
+        "vusers.created_by_name.Group Chat": 19
+      },
+      "rates": {},
+      "firstCounterAt": 1754147340022,
+      "lastCounterAt": 1754147349964,
+      "firstMetricAt": 1754147340022,
+      "lastMetricAt": 1754147349964,
+      "period": "1754147340000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "errors.Unexpected server response: 401": 10,
+        "vusers.failed": 5,
+        "vusers.created_by_name.One To One Chat": 3,
+        "vusers.created": 4,
+        "vusers.created_by_name.Group Chat": 1
+      },
+      "rates": {},
+      "firstCounterAt": 1754147350022,
+      "lastCounterAt": 1754147350303,
+      "firstMetricAt": 1754147350022,
+      "lastMetricAt": 1754147350303,
+      "period": "1754147350000",
+      "summaries": {},
+      "histograms": {}
+    }
+  ]
+}

@@ -1,23 +1,87 @@
-import { mockUsers, mockGroups } from "../src/mockData";
+const allUsers = Array.from({ length: 100 }, (_, i) => ({
+  [`user${i + 1}`]: {
+    username: `user${i + 1}`,
+    password: `password`,
+    token: null, // Store JWT token here
+  },
+})).reduce((acc, user) => ({ ...acc, ...user }), {});
 
-// Extract all user names from mockUsers
-const allUsers = Object.keys(mockUsers);
 let userIdx = 0;
 let targetFriendIdx = userIdx + 1;
 
-// Extract all group IDs from mockGroups
-const groups = Object.keys(mockGroups);
+const groups = [
+  "2412992431915008",
+  "2412994571010048",
+  "2412996034822144",
+  "2412998224248832",
+  "2413000279457792",
+  "2413003676844032",
+  "2413004465373184",
+  "2413006570913792",
+  "2413008743563264",
+  "2413011344031744",
+  "2413012862369792",
+  "2413015043407872",
+];
 let groupIdx = 0;
 
+// Authentication cache to avoid repeated logins
+const authCache = new Map();
+
+// Function to fetch JWT token for a user
+async function getAuthToken(username, password) {
+  // Check cache first
+  if (authCache.has(username)) {
+    return authCache.get(username);
+  }
+
+  try {
+    const response = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.token) {
+      // Cache the token
+      authCache.set(username, data.token);
+      return data.token;
+    } else {
+      console.error(`Authentication failed for ${username}: ${data.error}`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Authentication error for ${username}:`, error.message);
+    return null;
+  }
+}
+
 module.exports = {
-  connectHandler(params, context, next) {
-    const username = allUsers[userIdx % allUsers.length];
+  async connectHandler(params, context, next) {
+    const user = allUsers[`user${(userIdx % 100) + 1}`];
     userIdx++;
 
-    context.vars.username = username;
+    context.vars.username = user.username;
 
-    // console.log(`Using user: ${username} and target friend: ${targetFriend}`);
-    params.target = `${params.target}/?username=${context.vars.username}`;
+    // Get or fetch JWT token
+    let token = user.token;
+    if (!token) {
+      token = await getAuthToken(user.username, user.password);
+      if (token) {
+        user.token = token; // Store for future use
+      } else {
+        console.error(`Failed to authenticate ${user.username}`);
+        // Continue anyway to test error handling
+      }
+    }
+
+    context.vars.authToken = token;
+
+    params.target = `${params.target}/?username=${context.vars.username}&authToken=${context.vars.authToken}`;
     context.vars.connectStart = performance.now();
     next();
   },
@@ -28,7 +92,8 @@ module.exports = {
     next();
   },
   handleOneToOne(context, events, next) {
-    const targetFriend = allUsers[targetFriendIdx % allUsers.length];
+    const targetFriend =
+      allUsers[targetFriendIdx % Object.keys(allUsers).length];
     targetFriendIdx++;
     context.vars.targetFriend = targetFriend;
     // console.log(

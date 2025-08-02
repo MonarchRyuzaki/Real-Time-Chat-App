@@ -20,7 +20,10 @@
     "db:generate": "prisma generate --schema=src/prisma/schema.prisma",
     "db:push": "prisma db push --schema=src/prisma/schema.prisma",
     "db:studio": "prisma studio --schema=src/prisma/schema.prisma",
-    "db:seed": "ts-node src/prisma/seed.ts"
+    "db:seed": "ts-node src/prisma/seed.ts",
+    "create-dummy-users": "ts-node scripts/create-dummy-users.ts",
+    "create-chats": "ts-node scripts/create-one-to-one-chats.ts",
+    "create-groups": "ts-node scripts/create-groups-and-members.ts"
   },
   "keywords": [],
   "author": "",
