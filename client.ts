@@ -347,7 +347,6 @@ async function connectToPresenceWebSocket(): Promise<WebSocket> {
           "⚠️ Received ping from presence server - NOT responding (simulating disconnection)"
         );
       }
-      ws.terminate();
     });
 
     ws.on("message", (data) => {
@@ -509,8 +508,29 @@ function handleMessage(message: MessageResponse) {
 }
 
 function handleChatHistory(message: OneToOneChatHistoryResponse) {
-  console.log(`\n📜 Chat History:`);
+  const chatPartner =
+    message.messages && message.messages.length > 0
+      ? message.messages[0].from === username
+        ? message.messages[0].to
+        : message.messages[0].from
+      : "Unknown";
+
+  console.log(`\n📜 Chat History with ${chatPartner}:`);
   console.log("=".repeat(50));
+
+  // Display online status and last seen time
+  if (message.isOnline) {
+    console.log(`🟢 ${chatPartner} is currently online`);
+  } else {
+    console.log(`🔴 ${chatPartner} is offline`);
+    if (message.lastSeenTime) {
+      const lastSeen = new Date(message.lastSeenTime).toLocaleString();
+      console.log(`👁️ Last seen: ${lastSeen}`);
+    } else {
+      console.log(`👁️ Last seen: Unknown`);
+    }
+  }
+  console.log("-".repeat(50));
 
   if (message.messages && message.messages.length > 0) {
     message.messages.forEach((msg) => {

@@ -150,18 +150,11 @@ async function gracefulShutdown() {
     closePrismaClient().catch((error) => {
       logger.error("Error closing Prisma client:", error);
     }),
-    disconnectFromRedis().catch((error) => {
-      logger.error("Error disconnecting from Redis:", error);
-    }),
   ];
 
   try {
-    await Promise.race([
-      Promise.all(shutdownPromises),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Shutdown timeout")), 10000)
-      ),
-    ]);
+    await Promise.all(shutdownPromises);
+    await disconnectFromRedis();
 
     logger.info("✅ All services closed successfully");
     process.exit(0);

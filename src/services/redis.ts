@@ -33,9 +33,9 @@ export async function getClient() {
   return client;
 }
 
-export async function disconnectFromRedis() {
+export function disconnectFromRedis() {
   if (client) {
-    await client.quit();
+    client.destroy();
     console.log("Disconnected from Redis");
     client = null;
   }
