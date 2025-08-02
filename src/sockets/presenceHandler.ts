@@ -3,6 +3,7 @@ import {
   chatConnectionManager,
   presenceConnectionManager,
 } from "../services/connectionService";
+import { redisService } from "../services/redis";
 
 interface PresenceWebSocket extends WebSocket {
   isAlive?: boolean;
@@ -12,9 +13,10 @@ interface PresenceWebSocket extends WebSocket {
 export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
   ws.isAlive = true;
 
-  ws.on("pong", () => {
+  ws.on("pong", async () => {
     const username = presenceConnectionManager.getUsername(ws);
     console.log(`Responding to ping ${username}`);
+    await redisService.set(`online_users:${username}`, "1");
     ws.isAlive = true;
   });
   ws.pingInterval = setInterval(() => {

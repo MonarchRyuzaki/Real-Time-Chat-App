@@ -10,7 +10,7 @@ import {
   presenceConnectionManager,
 } from "./services/connectionService";
 import { closePrismaClient, initializePrismaClient } from "./services/prisma";
-import { redisService } from "./services/Redis";
+import { connectToRedis, disconnectFromRedis } from "./services/redis";
 import { chatHandler } from "./sockets/chatHandler";
 import { presenceHandler } from "./sockets/presenceHandler";
 import { logger } from "./utils/logger";
@@ -61,7 +61,7 @@ async function initializeDatabases(): Promise<void> {
 
   logger.info("🔌 Connecting to Redis...");
   try {
-    await redisService.connect();
+    await connectToRedis();
     logger.info("✅ Redis client connected successfully");
   } catch (error) {
     logger.error("❌ Failed to connect to Redis:", error);
@@ -150,6 +150,9 @@ async function gracefulShutdown() {
     closePrismaClient().catch((error) => {
       logger.error("Error closing Prisma client:", error);
     }),
+    disconnectFromRedis().catch((error) => {
+      logger.error("Error disconnecting from Redis:", error);
+    })
   ];
 
   try {
@@ -159,7 +162,6 @@ async function gracefulShutdown() {
         setTimeout(() => reject(new Error("Shutdown timeout")), 10000)
       ),
     ]);
-    redisService.disconnect();
 
     logger.info("✅ All services closed successfully");
     process.exit(0);
