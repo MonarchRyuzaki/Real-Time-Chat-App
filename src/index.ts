@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { createHttpServer } from "./server/http";
-import { createWebSocketServer } from "./server/ws";
+import { closeAllWebSocketServers, createWebSocketServer } from "./server/ws";
 import {
   closeCassandraClient,
   initializeCassandraClient,
@@ -126,6 +126,23 @@ function setupShutdownHandlers(): void {
 async function gracefulShutdown() {
   logger.info("🛑 Shutting down server gracefully...");
 
+  // Close WebSocket servers first
+  try {
+    logger.info("Closing WebSocket servers...");
+    await closeAllWebSocketServers();
+  } catch (error) {
+    logger.error("Error closing WebSocket servers:", error);
+  }
+
+  // Close all WebSocket connections
+  try {
+    logger.info("Closing WebSocket connections...");
+    chatConnectionManager.closeAllConnections();
+    presenceConnectionManager.closeAllConnections();
+  } catch (error) {
+    logger.error("Error closing WebSocket connections:", error);
+  }
+
   const shutdownPromises = [
     closeCassandraClient().catch((error) => {
       logger.error("Error closing Cassandra client:", error);
@@ -143,7 +160,7 @@ async function gracefulShutdown() {
       ),
     ]);
 
-    logger.info("✅ All database connections closed successfully");
+    logger.info("✅ All services closed successfully");
     process.exit(0);
   } catch (error) {
     logger.error("❌ Error during shutdown:", error);

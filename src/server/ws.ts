@@ -13,6 +13,9 @@ interface AuthResult {
   error?: string | null;
 }
 
+// Store server references for proper cleanup
+const activeServers = new Set<WebSocketServer>();
+
 // Adapter function to use existing HTTP middleware for WebSocket authentication
 function verifyWebSocketToken(req: IncomingMessage): AuthResult {
   try {
@@ -58,7 +61,7 @@ export function createWebSocketServer({
   port: number;
   handler: (ws: WebSocket, req: WebSocketServer) => void;
   connectionManager: ConnectionManager;
-}) {
+}): WebSocketServer {
   try {
     const wss = new WebSocketServer({
       port,
@@ -98,6 +101,9 @@ export function createWebSocketServer({
         }
       },
     });
+
+    // Track active servers for cleanup
+    activeServers.add(wss);
 
     wss.on("connection", (ws: WebSocket, req: AuthenticatedIncomingMessage) => {
       try {
@@ -157,10 +163,50 @@ export function createWebSocketServer({
       console.error("WebSocket server error:", error);
     });
 
+    wss.on("close", () => {
+      console.log(`WebSocket server on port ${port} closed`);
+      activeServers.delete(wss);
+    });
+
     console.log(`WebSocket server is running on ws://localhost:${port}`);
     return wss;
   } catch (error) {
     console.error("Error creating WebSocket server:", error);
     throw error;
   }
+}
+
+// Function to close all WebSocket servers
+export function closeAllWebSocketServers(): Promise<void> {
+  return new Promise((resolve) => {
+    if (activeServers.size === 0) {
+      resolve();
+      return;
+    }
+
+    let closedCount = 0;
+    const totalServers = activeServers.size;
+
+    console.log(`Closing ${totalServers} WebSocket server(s)...`);
+
+    activeServers.forEach((server) => {
+      server.close(() => {
+        closedCount++;
+        if (closedCount === totalServers) {
+          activeServers.clear();
+          console.log("All WebSocket servers closed");
+          resolve();
+        }
+      });
+    });
+
+    // Force resolve after timeout to prevent hanging
+    setTimeout(() => {
+      if (closedCount < totalServers) {
+        console.warn("Some WebSocket servers did not close gracefully, forcing shutdown");
+        activeServers.clear();
+        resolve();
+      }
+    }, 5000);
+  });
 }
