@@ -82,6 +82,12 @@ let friendsMap: Map<string, string> = new Map(); // Maps friend username to chat
 let isInitialized = false;
 let isConnecting = false;
 
+// WebSocket connections
+let chatWebSocket: WebSocket | null = null;
+let presenceWebSocket: WebSocket | null = null;
+let presenceConnected = false;
+let shouldRespondToPings = true; // Flag to simulate presence disconnection
+
 // Create readline interface for non-blocking input
 const rl = readline.createInterface({
   input: process.stdin,
@@ -261,9 +267,9 @@ async function authenticateUser(): Promise<void> {
 }
 
 // Enhanced WebSocket connection with better error handling
-async function connectToWebSocket(): Promise<WebSocket> {
+async function connectToChatWebSocket(): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
-    console.log("📡 Connecting to WebSocket server...");
+    console.log("📡 Connecting to Chat WebSocket server...");
     isConnecting = true;
 
     const ws = new WebSocket(`ws://localhost:4000/?username=${username}`, {
@@ -275,7 +281,7 @@ async function connectToWebSocket(): Promise<WebSocket> {
     const connectionTimeout = setTimeout(() => {
       if (isConnecting) {
         ws.close();
-        reject(new Error("Connection timeout"));
+        reject(new Error("Chat WebSocket connection timeout"));
       }
     }, 10000);
 
@@ -289,7 +295,7 @@ async function connectToWebSocket(): Promise<WebSocket> {
     ws.on("error", (error) => {
       clearTimeout(connectionTimeout);
       isConnecting = false;
-      console.error("❌ WebSocket connection error:", error.message);
+      console.error("❌ Chat WebSocket connection error:", error.message);
 
       if (
         error.message.includes("401") ||
@@ -298,7 +304,76 @@ async function connectToWebSocket(): Promise<WebSocket> {
         console.log("Authentication failed. Please login again.");
       } else {
         console.log(
-          "Please check if the WebSocket server is running on ws://localhost:4000"
+          "Please check if the Chat WebSocket server is running on ws://localhost:4000"
+        );
+      }
+
+      reject(error);
+    });
+  });
+}
+
+async function connectToPresenceWebSocket(): Promise<WebSocket> {
+  return new Promise((resolve, reject) => {
+    console.log("📡 Connecting to Presence WebSocket server...");
+
+    const ws = new WebSocket(`ws://localhost:4001?username=${username}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    const connectionTimeout = setTimeout(() => {
+      ws.close();
+      reject(new Error("Presence WebSocket connection timeout"));
+    }, 10000);
+
+    ws.on("open", () => {
+      clearTimeout(connectionTimeout);
+      presenceConnected = true;
+      console.log("✅ Connected to presence server!");
+      resolve(ws);
+    });
+
+    ws.on("ping", () => {
+      if (shouldRespondToPings) {
+        console.log(
+          "🏓 Received ping from presence server - responding with pong"
+        );
+      } else {
+        console.log(
+          "⚠️ Received ping from presence server - NOT responding (simulating disconnection)"
+        );
+      }
+      ws.terminate();
+    });
+
+    ws.on("message", (data) => {
+      console.log("📨 Presence server message:", data.toString());
+    });
+
+    ws.on("close", (code, reason) => {
+      presenceConnected = false;
+      console.log(
+        `❌ Presence connection closed - Code: ${code}, Reason: ${
+          reason.toString() || "No reason"
+        }`
+      );
+    });
+
+    ws.on("error", (error) => {
+      clearTimeout(connectionTimeout);
+      presenceConnected = false;
+      console.error("❌ Presence WebSocket connection error:", error.message);
+
+      if (
+        error.message.includes("401") ||
+        error.message.includes("Unauthorized")
+      ) {
+        console.log("Presence authentication failed. Please login again.");
+      } else {
+        console.log(
+          "Please check if the Presence WebSocket server is running on ws://localhost:4001"
         );
       }
 
@@ -418,10 +493,8 @@ function handleInitData(message: InitDataMessage) {
 }
 
 // Store current websocket reference for offline message acknowledgment
-let currentWebSocket: WebSocket | null = null;
-
 function getCurrentWebSocket(): WebSocket | null {
-  return currentWebSocket;
+  return chatWebSocket;
 }
 
 function handleMessage(message: MessageResponse) {
@@ -511,23 +584,41 @@ async function init() {
       process.exit(1);
     }
 
-    // Connect to WebSocket
-    const ws = await connectToWebSocket();
+    // Connect to Chat WebSocket
+    const chatWs = await connectToChatWebSocket();
+    chatWebSocket = chatWs;
 
-    // Store WebSocket reference for offline message acknowledgment
-    currentWebSocket = ws;
+    // Connect to Presence WebSocket
+    try {
+      const presenceWs = await connectToPresenceWebSocket();
+      presenceWebSocket = presenceWs;
+    } catch (error) {
+      console.warn(
+        "⚠️ Failed to connect to presence server:",
+        error instanceof Error ? error.message : "Unknown error"
+      );
+      console.log("💡 Continuing without presence connection...");
+    }
 
-    // Set up message handler
-    ws.on("message", (data) => handleIncomingMessage(ws, data.toString()));
+    // Set up message handler for chat
+    chatWs.on("message", (data) =>
+      handleIncomingMessage(chatWs, data.toString())
+    );
 
-    ws.on("close", () => {
-      console.log("\n📴 Connection closed");
+    chatWs.on("close", () => {
+      console.log("\n📴 Chat connection closed");
+      if (presenceWebSocket) {
+        presenceWebSocket.close();
+      }
       rl.close();
       process.exit();
     });
 
-    ws.on("error", (error) => {
-      console.error("\n💥 WebSocket error:", error.message);
+    chatWs.on("error", (error) => {
+      console.error("\n💥 Chat WebSocket error:", error.message);
+      if (presenceWebSocket) {
+        presenceWebSocket.close();
+      }
       rl.close();
       process.exit(1);
     });
@@ -545,7 +636,7 @@ async function init() {
     });
 
     // Start main menu
-    await mainMenu(ws);
+    await mainMenu(chatWs);
   } catch (error) {
     console.error(
       "❌ Failed to initialize client:",
@@ -573,7 +664,9 @@ function showMainMenu() {
   console.log("3. 🤝 Start New Chat");
   console.log("4. 📋 List Active Chats");
   console.log("5. 👤 Account Info");
-  console.log("6. 🚪 Exit");
+  console.log("6. 🔌 Connection Status");
+  console.log("7. 🧪 Test Disconnections");
+  console.log("8. 🚪 Exit");
 }
 
 async function mainMenu(ws: WebSocket): Promise<void> {
@@ -583,7 +676,7 @@ async function mainMenu(ws: WebSocket): Promise<void> {
   }
 
   showMainMenu();
-  const choice = await question("\nChoose an option (1-6): ");
+  const choice = await question("\nChoose an option (1-8): ");
 
   switch (choice) {
     case "1":
@@ -607,9 +700,20 @@ async function mainMenu(ws: WebSocket): Promise<void> {
       break;
 
     case "6":
+      await handleConnectionStatus();
+      break;
+
+    case "7":
+      await handleTestDisconnections();
+      break;
+
+    case "8":
       console.log("👋 Goodbye!");
       ws.send(JSON.stringify({ type: "DISCONNECT" }));
       ws.close();
+      if (presenceWebSocket) {
+        presenceWebSocket.close();
+      }
       rl.close();
       process.exit();
 
@@ -771,6 +875,119 @@ async function handleAccountInfo() {
   console.log(`Friends: ${friendsMap.size}`);
   console.log("=".repeat(30));
   await new Promise((resolve) => setTimeout(resolve, 3000));
+}
+
+async function handleConnectionStatus() {
+  console.log("\n🔌 Connection Status:");
+  console.log("=".repeat(40));
+  console.log(
+    `Chat Server (4000): ${
+      chatWebSocket?.readyState === WebSocket.OPEN
+        ? "✅ Connected"
+        : "❌ Disconnected"
+    }`
+  );
+  console.log(
+    `Presence Server (4001): ${
+      presenceConnected ? "✅ Connected" : "❌ Disconnected"
+    }`
+  );
+  console.log(
+    `Ping Response: ${
+      shouldRespondToPings
+        ? "✅ Enabled"
+        : "⚠️ Disabled (simulating disconnection)"
+    }`
+  );
+  console.log("=".repeat(40));
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+}
+
+async function handleTestDisconnections() {
+  console.log("\n🧪 Test Disconnection Options:");
+  console.log("=".repeat(40));
+  console.log("1. 📞 Disconnect from Chat Server");
+  console.log("2. 👥 Disconnect from Presence Server");
+  console.log("3. 🏓 Stop responding to presence pings (simulate timeout)");
+  console.log("4. 🔄 Resume responding to presence pings");
+  console.log("5. ⚡ Force terminate presence connection");
+  console.log("6. 🔌 Reconnect to presence server");
+  console.log("7. ⬅️ Back to main menu");
+
+  const choice = await question("\nChoose test option (1-7): ");
+
+  switch (choice) {
+    case "1":
+      if (chatWebSocket) {
+        console.log("📞 Disconnecting from chat server...");
+        chatWebSocket.send(JSON.stringify({ type: "DISCONNECT" }));
+        chatWebSocket.close();
+        console.log("✅ Chat server disconnected");
+      } else {
+        console.log("❌ Chat server not connected");
+      }
+      break;
+
+    case "2":
+      if (presenceWebSocket) {
+        console.log("👥 Disconnecting from presence server...");
+        presenceWebSocket.close();
+        console.log("✅ Presence server disconnected");
+      } else {
+        console.log("❌ Presence server not connected");
+      }
+      break;
+
+    case "3":
+      shouldRespondToPings = false;
+      console.log("🏓 Stopped responding to presence pings");
+      console.log(
+        "⏰ Wait for next server ping (every 30s) to see disconnection"
+      );
+      break;
+
+    case "4":
+      shouldRespondToPings = true;
+      console.log("🔄 Resumed responding to presence pings");
+      break;
+
+    case "5":
+      if (presenceWebSocket) {
+        console.log("⚡ Force terminating presence connection...");
+        presenceWebSocket.terminate();
+        console.log("✅ Presence connection force terminated");
+      } else {
+        console.log("❌ Presence server not connected");
+      }
+      break;
+
+    case "6":
+      if (!presenceConnected) {
+        try {
+          console.log("🔌 Reconnecting to presence server...");
+          const presenceWs = await connectToPresenceWebSocket();
+          presenceWebSocket = presenceWs;
+          shouldRespondToPings = true;
+          console.log("✅ Reconnected to presence server");
+        } catch (error) {
+          console.log(
+            "❌ Failed to reconnect to presence server:",
+            error instanceof Error ? error.message : "Unknown error"
+          );
+        }
+      } else {
+        console.log("✅ Already connected to presence server");
+      }
+      break;
+
+    case "7":
+      return; // Return to main menu
+
+    default:
+      console.log("❌ Invalid option");
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 }
 
 // Handle Ctrl+C gracefully
