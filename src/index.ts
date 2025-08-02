@@ -161,6 +161,9 @@ async function gracefulShutdown() {
     closePrismaClient().catch((error) => {
       logger.error("Error closing Prisma client:", error);
     }),
+    redisService.disconnect().catch((error) => {
+      logger.error("Error closing Redis client:", error);
+    }),
   ];
 
   try {

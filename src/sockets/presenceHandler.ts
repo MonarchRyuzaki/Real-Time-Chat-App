@@ -54,6 +54,9 @@ function cleanupConnection(ws: PresenceWebSocket): void {
       ws.pingInterval = undefined;
     }
 
+    // Remove all event listeners to prevent memory leaks
+    ws.removeAllListeners();
+
     // Remove from connection managers
     chatConnectionManager.removeConnection(ws);
     presenceConnectionManager.removeConnection(ws);

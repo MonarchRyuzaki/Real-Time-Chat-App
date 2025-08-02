@@ -81,8 +81,8 @@ function handleMessage(
 function handleDisconnect(ws: WebSocket): void {
   try {
     const username = chatConnectionManager.getUsername(ws);
+    chatConnectionManager.removeConnection(ws);
     if (username) {
-      chatConnectionManager.removeConnection(ws);
       console.log(`User ${username} disconnected`);
     } else {
       console.log("Disconnect handler called for unknown user");

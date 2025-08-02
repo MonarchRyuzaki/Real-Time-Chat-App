@@ -32,6 +32,9 @@ export class ConnectionManager {
 
   private cleanupSocket(socket: WebSocket): void {
     try {
+      // Remove all event listeners to prevent memory leaks
+      socket.removeAllListeners();
+
       // Only terminate if the socket is still open or connecting
       if (socket.readyState === WebSocket.OPEN) {
         socket.close(1000, "Connection cleanup");
