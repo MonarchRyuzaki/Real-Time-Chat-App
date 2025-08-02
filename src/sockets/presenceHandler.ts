@@ -41,16 +41,12 @@ function cleanupConnection(ws: PresenceWebSocket): void {
       clearInterval(ws.pingInterval);
       ws.pingInterval = undefined;
     }
-
-    ws.removeAllListeners();
-    chatConnectionManager.removeConnection(ws);
-    presenceConnectionManager.removeConnection(ws);
-    if (
-      ws.readyState === WebSocket.OPEN ||
-      ws.readyState === WebSocket.CONNECTING
-    ) {
-      ws.terminate();
+    const username = presenceConnectionManager.getUsername(ws);
+    if (username) {
+      const chatWs = chatConnectionManager.getSocket(username);
+      if (chatWs) chatConnectionManager.removeConnection(chatWs);
     }
+    presenceConnectionManager.removeConnection(ws);
   } catch (error) {
     console.error("Error during presence connection cleanup:", error);
   }
