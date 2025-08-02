@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { getGroupChatMessage } from "../../cassandra/get_group_chat_message";
 import { insertGroupChatMessage } from "../../cassandra/insert_group_chat_message";
-import { mapUserToSocket } from "../../server/ws";
+import { chatConnectionManager } from "../../services/connectionService";
 import { getPrismaClient } from "../../services/prisma";
 import {
   CreateGroupChatMessage,
@@ -116,7 +116,7 @@ async function notifyGroupMembers(
     if (!groupChat) return;
 
     groupChat.members.forEach((member) => {
-      const memberSocket = mapUserToSocket.get(member.user);
+      const memberSocket = chatConnectionManager.getSocket(member.user);
       if (memberSocket && memberSocket !== excludeSocket) {
         WsResponse.custom(memberSocket, {
           type: "GROUP_MEMBER_JOINED",
@@ -207,7 +207,7 @@ async function broadcastGroupMessage(
     const memberUsername = member.user;
     if (memberUsername === fromUsername) return; // Don't send to sender
 
-    const memberSocket = mapUserToSocket.get(memberUsername);
+    const memberSocket = chatConnectionManager.getSocket(memberUsername);
     if (!memberSocket) {
       const prisma = getPrismaClient();
       await prisma.offlineMessages.create({

@@ -1,9 +1,7 @@
 import { IncomingMessage } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { verifyToken } from "../middlewares/auth";
-
-export const mapUserToSocket = new Map<string, WebSocket>();
-export const mapSocketToUser = new Map<WebSocket, string>();
+import { ConnectionManager } from "../utils/ConnectionManager";
 
 interface AuthenticatedIncomingMessage extends IncomingMessage {
   username?: string;
@@ -55,9 +53,11 @@ function verifyWebSocketToken(req: IncomingMessage): AuthResult {
 export function createWebSocketServer({
   port,
   handler,
+  connectionManager,
 }: {
   port: number;
   handler: (ws: WebSocket, req: WebSocketServer) => void;
+  connectionManager: ConnectionManager;
 }) {
   try {
     const wss = new WebSocketServer({
@@ -113,25 +113,14 @@ export function createWebSocketServer({
 
         console.log(`User ${username} connected via authenticated WebSocket`);
 
-        // Clean up any existing connection for this user
-        const existingSocket = mapUserToSocket.get(username);
-        if (existingSocket && existingSocket !== ws) {
-          try {
-            existingSocket.close(1000, "New connection established");
-          } catch (closeError) {
-            console.error("Error closing existing WebSocket:", closeError);
-          }
-        }
-
-        mapUserToSocket.set(username, ws);
-        mapSocketToUser.set(ws, username);
+        // Use ConnectionManager
+        connectionManager.setConnection(username, ws);
 
         // Set up connection cleanup on close
         ws.on("close", () => {
           try {
             console.log(`User ${username} WebSocket connection closed`);
-            mapUserToSocket.delete(username);
-            mapSocketToUser.delete(ws);
+            connectionManager.removeConnection(ws);
           } catch (cleanupError) {
             console.error(
               "Error cleaning up WebSocket mappings:",
@@ -143,8 +132,7 @@ export function createWebSocketServer({
         ws.on("error", (error) => {
           console.error(`WebSocket error for user ${username}:`, error);
           try {
-            mapUserToSocket.delete(username);
-            mapSocketToUser.delete(ws);
+            connectionManager.removeConnection(ws);
           } catch (cleanupError) {
             console.error(
               "Error cleaning up WebSocket mappings on error:",

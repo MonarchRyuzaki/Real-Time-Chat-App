@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { getOneToOneChatHistory } from "../../cassandra/get_one_to_one_chat_history_by_chat_id";
 import { insertOneToOneChat } from "../../cassandra/insert_one_to_one_chat";
-import { mapUserToSocket } from "../../server/ws";
+import { chatConnectionManager } from "../../services/connectionService";
 import { getPrismaClient } from "../../services/prisma";
 import {
   GetOneToOneChatHistoryMessage,
@@ -69,7 +69,7 @@ async function notifyNewChatCreated(
   senderSocket: WebSocket
 ): Promise<void> {
   try {
-    const recipientSocket = mapUserToSocket.get(toUsername);
+    const recipientSocket = chatConnectionManager.getSocket(toUsername);
     if (recipientSocket) {
       WsResponse.custom(recipientSocket, {
         type: "NEW_ONE_TO_ONE_CHAT_AP",
@@ -186,7 +186,7 @@ async function deliverMessage(
   senderSocket: WebSocket
 ): Promise<void> {
   try {
-    const recipientSocket = mapUserToSocket.get(toUsername);
+    const recipientSocket = chatConnectionManager.getSocket(toUsername);
 
     if (!recipientSocket) {
       const prisma = getPrismaClient();

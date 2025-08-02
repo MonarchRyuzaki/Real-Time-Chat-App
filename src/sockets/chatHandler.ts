@@ -1,5 +1,5 @@
 import { WebSocket, WebSocketServer } from "ws";
-import { mapSocketToUser, mapUserToSocket } from "../server/ws";
+import { chatConnectionManager } from "../services/connectionService";
 import { getPrismaClient } from "../services/prisma";
 import { MessageHandlerMap } from "../types/handlerTypes";
 import {
@@ -80,10 +80,9 @@ function handleMessage(
 
 function handleDisconnect(ws: WebSocket): void {
   try {
-    const username = mapSocketToUser.get(ws);
+    const username = chatConnectionManager.getUsername(ws);
     if (username) {
-      mapUserToSocket.delete(username);
-      mapSocketToUser.delete(ws);
+      chatConnectionManager.removeConnection(ws);
       console.log(`User ${username} disconnected`);
     } else {
       console.log("Disconnect handler called for unknown user");
@@ -94,7 +93,7 @@ function handleDisconnect(ws: WebSocket): void {
 }
 
 async function initChatHandler(ws: WebSocket): Promise<void> {
-  const username = mapSocketToUser.get(ws);
+  const username = chatConnectionManager.getUsername(ws);
   if (!username || !(await WsValidation.validateUser(ws, username))) return;
 
   try {
@@ -192,7 +191,7 @@ async function offlineMessagesAckHandler(
   ws: WebSocket,
   data: OfflineMessagesAckMessage
 ): Promise<void> {
-  const username = mapSocketToUser.get(ws);
+  const username = chatConnectionManager.getUsername(ws);
   if (!username || !(await WsValidation.validateUser(ws, username))) return;
 
   try {
@@ -214,12 +213,11 @@ async function offlineMessagesAckHandler(
 }
 
 function disconnectHandler(ws: WebSocket): void {
-  const username = mapSocketToUser.get(ws);
+  const username = chatConnectionManager.getUsername(ws);
 
   try {
     if (username) {
-      mapUserToSocket.delete(username);
-      mapSocketToUser.delete(ws);
+      chatConnectionManager.removeConnection(ws);
       WsResponse.info(ws, "You have been disconnected.");
       console.log(`User ${username} disconnected gracefully`);
     } else {

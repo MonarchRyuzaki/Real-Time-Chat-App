@@ -5,13 +5,19 @@ import {
   closeCassandraClient,
   initializeCassandraClient,
 } from "./services/cassandra";
+import {
+  chatConnectionManager,
+  presenceConnectionManager,
+} from "./services/connectionService";
 import { closePrismaClient, initializePrismaClient } from "./services/prisma";
 import { chatHandler } from "./sockets/chatHandler";
+import { presenceHandler } from "./sockets/presenceHandler";
 import { logger } from "./utils/logger";
 dotenv.config();
 
 const PORT = 3000;
-const WS_PORT = 4000;
+const WS_CHAT_PORT = 4000;
+const WS_PRESENCE_PORT = 4001;
 
 async function startServer() {
   try {
@@ -23,8 +29,8 @@ async function startServer() {
     // Start HTTP server
     await startHttpServer();
 
-    // Start WebSocket server
-    await startWebSocketServer();
+    // Start WebSocket servers
+    await startWebSocketServers();
 
     logger.info("✅ All services started successfully");
 
@@ -79,13 +85,28 @@ async function startHttpServer(): Promise<void> {
   }
 }
 
-async function startWebSocketServer(): Promise<void> {
+async function startWebSocketServers(): Promise<void> {
   try {
-    createWebSocketServer({ port: WS_PORT, handler: chatHandler });
-    logger.info(`🔌 WebSocket server started on port ${WS_PORT}`);
+    // Start chat WebSocket server
+    createWebSocketServer({
+      port: WS_CHAT_PORT,
+      handler: chatHandler,
+      connectionManager: chatConnectionManager,
+    });
+    logger.info(`🔌 Chat WebSocket server started on port ${WS_CHAT_PORT}`);
+
+    // Start presence WebSocket server
+    createWebSocketServer({
+      port: WS_PRESENCE_PORT,
+      handler: presenceHandler,
+      connectionManager: presenceConnectionManager,
+    });
+    logger.info(
+      `👁️ Presence WebSocket server started on port ${WS_PRESENCE_PORT}`
+    );
   } catch (error) {
-    logger.error("❌ Failed to start WebSocket server:", error);
-    throw new Error("WebSocket server startup failed");
+    logger.error("❌ Failed to start WebSocket servers:", error);
+    throw new Error("WebSocket servers startup failed");
   }
 }
 
