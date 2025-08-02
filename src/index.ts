@@ -152,7 +152,7 @@ async function gracefulShutdown() {
     }),
     disconnectFromRedis().catch((error) => {
       logger.error("Error disconnecting from Redis:", error);
-    })
+    }),
   ];
 
   try {

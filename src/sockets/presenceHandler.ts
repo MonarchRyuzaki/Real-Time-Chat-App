@@ -3,7 +3,7 @@ import {
   chatConnectionManager,
   presenceConnectionManager,
 } from "../services/connectionService";
-import { redisService } from "../services/redis";
+import { getClient } from "../services/redis";
 
 interface PresenceWebSocket extends WebSocket {
   isAlive?: boolean;
@@ -16,7 +16,12 @@ export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
   ws.on("pong", async () => {
     const username = presenceConnectionManager.getUsername(ws);
     console.log(`Responding to ping ${username}`);
-    await redisService.set(`online_users:${username}`, "1");
+    const client = await getClient();
+    if (client) {
+      await client.set(`online_users:${username}`, "1", {
+        EX: 60,
+      });
+    }
     ws.isAlive = true;
   });
   ws.pingInterval = setInterval(() => {
@@ -42,13 +47,20 @@ export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
   });
 }
 
-function cleanupConnection(ws: PresenceWebSocket): void {
+async function cleanupConnection(ws: PresenceWebSocket): Promise<void> {
   try {
     if (ws.pingInterval) {
       clearInterval(ws.pingInterval);
       ws.pingInterval = undefined;
     }
+    const client = await getClient();
     const username = presenceConnectionManager.getUsername(ws);
+    if (client) {
+      if (username) {
+        await client.del(`online_users:${username}`);
+        console.log(`Removed online status for ${username}`);
+      }
+    }
     console.log(`${username} is getting clean up`);
     if (username) {
       const chatWs = chatConnectionManager.getSocket(username);
