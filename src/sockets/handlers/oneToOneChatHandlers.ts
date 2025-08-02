@@ -3,6 +3,7 @@ import { getOneToOneChatHistory } from "../../cassandra/get_one_to_one_chat_hist
 import { insertOneToOneChat } from "../../cassandra/insert_one_to_one_chat";
 import { chatConnectionManager } from "../../services/connectionService";
 import { getPrismaClient } from "../../services/prisma";
+import { getClient } from "../../services/redis";
 import {
   GetOneToOneChatHistoryMessage,
   NewOneToOneChatMessage,
@@ -102,6 +103,19 @@ export async function getOneToOneChatHistoryHandler(
   parsed: GetOneToOneChatHistoryMessage
 ): Promise<void> {
   const { from: fromUsername, to: toUsername, chatId } = parsed;
+  const redis = await getClient();
+  if (!redis) {
+    WsResponse.error(ws, "Redis client is not available.");
+    return;
+  }
+
+  if (!(await WsValidation.validateUser(ws, fromUsername))) return;
+  if (!(await WsValidation.validateUser(ws, toUsername))) return;
+
+  if (!WsValidation.validateSelfChat(ws, fromUsername, toUsername)) return;
+
+  const isOnline = await redis.exists(`online_users:${toUsername}`);
+  const lastSeenTime = await redis.get(`last_seen:${toUsername}`);
 
   if (!fromUsername || !toUsername || !chatId) {
     WsResponse.error(
@@ -117,6 +131,8 @@ export async function getOneToOneChatHistoryHandler(
     WsResponse.custom(ws, {
       type: "ONE_TO_ONE_CHAT_HISTORY",
       messages: chatHistory || [],
+      isOnline: isOnline === 1,
+      lastSeenTime: lastSeenTime,
     });
 
     console.log(`Chat history retrieved for ${chatId} by ${fromUsername}`);

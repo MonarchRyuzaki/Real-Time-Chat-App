@@ -51,6 +51,8 @@ export interface MessageResponse extends BaseResponse {
 export interface OneToOneChatHistoryResponse extends BaseResponse {
   type: "ONE_TO_ONE_CHAT_HISTORY";
   messages: ChatMessage[];
+  isOnline: boolean;
+  lastSeenTime?: string | null; // Optional, for displaying last seen time
 }
 
 export interface GroupChatCreatedResponse extends BaseResponse {

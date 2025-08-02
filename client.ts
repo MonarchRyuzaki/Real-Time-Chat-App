@@ -49,6 +49,8 @@ interface OneToOneChatHistoryResponse extends BaseMessage {
     text: string;
     timestamp: string;
   }>;
+  isOnline: boolean;
+  lastSeenTime?: string; // Optional, for displaying last seen time
 }
 
 interface NewOneToOneChatApprovalResponse extends BaseMessage {
