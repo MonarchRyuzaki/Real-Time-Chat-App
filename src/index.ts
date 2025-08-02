@@ -24,18 +24,14 @@ async function startServer() {
   try {
     logger.info("🚀 Starting Real-Time Chat Application...");
 
-    // Initialize database connections
     await initializeDatabases();
 
-    // Start HTTP server
     await startHttpServer();
 
-    // Start WebSocket servers
     await startWebSocketServers();
 
     logger.info("✅ All services started successfully");
 
-    // Setup graceful shutdown handlers
     setupShutdownHandlers();
   } catch (error) {
     logger.error("❌ Failed to start server:", error);
@@ -45,7 +41,6 @@ async function startServer() {
 }
 
 async function initializeDatabases(): Promise<void> {
-  // Initialize Cassandra
   logger.info("🔌 Connecting to Cassandra database...");
   try {
     await initializeCassandraClient();
@@ -55,7 +50,6 @@ async function initializeDatabases(): Promise<void> {
     throw new Error("Cassandra connection failed - cannot start server");
   }
 
-  // Initialize Prisma
   logger.info("🔌 Connecting to Prisma database...");
   try {
     await initializePrismaClient();
@@ -65,7 +59,6 @@ async function initializeDatabases(): Promise<void> {
     throw new Error("Prisma connection failed - cannot start server");
   }
 
-  // Initialize Redis
   logger.info("🔌 Connecting to Redis...");
   try {
     await redisService.connect();
@@ -80,11 +73,11 @@ async function startHttpServer(): Promise<void> {
   try {
     const app = createHttpServer();
     const httpServer = app.listen(PORT, () => {
-      logger.info(`🚀 HTTP Server is running on port ${PORT}`);
-      logger.info(
-        `🏥 Health check available at http://localhost:${PORT}/health`
-      );
-      logger.info(`📚 API routes available at http://localhost:${PORT}/api`);
+      // logger.info(`🚀 HTTP Server is running on port ${PORT}`);
+      //   logger.info(
+      //     `🏥 Health check available at http://localhost:${PORT}/health`
+      //   );
+      //   logger.info(`📚 API routes available at http://localhost:${PORT}/api`);
     });
 
     httpServer.on("error", (error) => {
@@ -98,7 +91,6 @@ async function startHttpServer(): Promise<void> {
 
 async function startWebSocketServers(): Promise<void> {
   try {
-    // Start chat WebSocket server
     createWebSocketServer({
       port: WS_CHAT_PORT,
       handler: chatHandler,
@@ -106,7 +98,6 @@ async function startWebSocketServers(): Promise<void> {
     });
     logger.info(`🔌 Chat WebSocket server started on port ${WS_CHAT_PORT}`);
 
-    // Start presence WebSocket server
     createWebSocketServer({
       port: WS_PRESENCE_PORT,
       handler: presenceHandler,
@@ -125,11 +116,11 @@ function setupShutdownHandlers(): void {
   process.on("SIGTERM", gracefulShutdown);
   process.on("SIGINT", gracefulShutdown);
   process.on("uncaughtException", (error) => {
-    logger.error("❌ Uncaught Exception:", error);
+    // logger.error("❌ Uncaught Exception:", error);
     gracefulShutdown();
   });
   process.on("unhandledRejection", (reason, promise) => {
-    logger.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+    // logger.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
     gracefulShutdown();
   });
 }
@@ -137,7 +128,6 @@ function setupShutdownHandlers(): void {
 async function gracefulShutdown() {
   logger.info("🛑 Shutting down server gracefully...");
 
-  // Close WebSocket servers first
   try {
     logger.info("Closing WebSocket servers...");
     await closeAllWebSocketServers();
@@ -145,7 +135,6 @@ async function gracefulShutdown() {
     logger.error("Error closing WebSocket servers:", error);
   }
 
-  // Close all WebSocket connections
   try {
     logger.info("Closing WebSocket connections...");
     chatConnectionManager.closeAllConnections();
@@ -161,9 +150,6 @@ async function gracefulShutdown() {
     closePrismaClient().catch((error) => {
       logger.error("Error closing Prisma client:", error);
     }),
-    redisService.disconnect().catch((error) => {
-      logger.error("Error closing Redis client:", error);
-    }),
   ];
 
   try {
@@ -173,6 +159,7 @@ async function gracefulShutdown() {
         setTimeout(() => reject(new Error("Shutdown timeout")), 10000)
       ),
     ]);
+    redisService.disconnect();
 
     logger.info("✅ All services closed successfully");
     process.exit(0);

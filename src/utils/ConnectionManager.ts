@@ -5,7 +5,6 @@ export class ConnectionManager {
   private socketToUser = new Map<WebSocket, string>();
 
   setConnection(username: string, socket: WebSocket): void {
-    // Clean up existing connection
     const existingSocket = this.userToSocket.get(username);
     if (existingSocket && existingSocket !== socket) {
       try {
@@ -32,24 +31,11 @@ export class ConnectionManager {
 
   private cleanupSocket(socket: WebSocket): void {
     try {
-      // Remove all event listeners to prevent memory leaks
       socket.removeAllListeners();
 
-      // Only terminate if the socket is still open or connecting
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close(1000, "Connection cleanup");
-      } else if (socket.readyState === WebSocket.CONNECTING) {
-        socket.terminate();
-      }
-      // If already closing or closed, no action needed
+      socket.terminate();
     } catch (error) {
       console.error("Error during socket cleanup:", error);
-      // Force terminate as last resort
-      try {
-        socket.terminate();
-      } catch (terminateError) {
-        console.error("Error force terminating socket:", terminateError);
-      }
     }
   }
 
@@ -79,7 +65,6 @@ export class ConnectionManager {
     );
   }
 
-  // Method to cleanup all connections (useful for server shutdown)
   closeAllConnections(): void {
     console.log(`Closing ${this.userToSocket.size} active connections...`);
 

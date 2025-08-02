@@ -50,7 +50,7 @@ export async function newOnetoOneChatHandler(
         user2: existingChatId.split("-")[1],
       },
     });
-    // Notify both users about the new chat
+
     await notifyNewChatCreated(fromUsername, toUsername, existingChatId, ws);
 
     console.log(
@@ -146,7 +146,6 @@ export async function oneToOneChatHandler(
   }
 
   try {
-    // Store message in Cassandra
     const messageId = snowflakeIdGenerator();
     await Promise.all([
       insertOneToOneChat(
@@ -157,7 +156,6 @@ export async function oneToOneChatHandler(
         messageId
       ),
 
-      // Deliver message to recipient if online
       deliverMessage(
         fromUsername,
         toUsername,

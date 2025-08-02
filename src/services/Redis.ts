@@ -59,10 +59,10 @@ export class RedisService {
     }
   }
 
-  public async disconnect(): Promise<void> {
+  public disconnect() {
     try {
       if (this.isConnected) {
-        await this.client.disconnect();
+        this.client.destroy();
         logger.info("Redis connection closed");
       }
     } catch (error) {
@@ -83,5 +83,4 @@ export class RedisService {
   }
 }
 
-// Export a singleton instance
 export const redisService = RedisService.getInstance();

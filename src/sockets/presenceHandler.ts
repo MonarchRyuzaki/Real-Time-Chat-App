@@ -15,17 +15,6 @@ export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
   ws.on("pong", () => {
     ws.isAlive = true;
   });
-  ws.on("message", (data: string) => {
-    try {
-      const parsed = JSON.parse(data);
-      // Handle presence updates here
-      console.log("Presence update received:", parsed);
-    } catch (error) {
-      console.error("Error parsing presence message:", error);
-    }
-  });
-
-  // Store interval reference for proper cleanup
   ws.pingInterval = setInterval(() => {
     if (ws.isAlive === false) {
       cleanupConnection(ws);
@@ -48,20 +37,14 @@ export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
 
 function cleanupConnection(ws: PresenceWebSocket): void {
   try {
-    // Clear the ping interval to prevent memory leaks
     if (ws.pingInterval) {
       clearInterval(ws.pingInterval);
       ws.pingInterval = undefined;
     }
 
-    // Remove all event listeners to prevent memory leaks
     ws.removeAllListeners();
-
-    // Remove from connection managers
     chatConnectionManager.removeConnection(ws);
     presenceConnectionManager.removeConnection(ws);
-
-    // Terminate the connection if still open
     if (
       ws.readyState === WebSocket.OPEN ||
       ws.readyState === WebSocket.CONNECTING

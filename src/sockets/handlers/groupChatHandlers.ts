@@ -91,7 +91,6 @@ export async function joinGroupChatHandler(
 
     WsResponse.success(ws, `User ${username} has joined the group.`);
 
-    // Notify other group members || Queue Refactor Later for Optimization
     await notifyGroupMembers(groupId, username, ws);
 
     console.log(`User ${username} joined group ${groupId}`);
@@ -139,7 +138,6 @@ export async function getGroupChatHistoryHandler(
   if (!(await WsValidation.validateGroup(ws, groupId))) return;
 
   try {
-    // Fetch group chat history from database
     const groupMessages = await getGroupChatMessage(groupId);
     WsResponse.custom(ws, {
       type: "GROUP_CHAT_HISTORY",
@@ -203,9 +201,8 @@ async function broadcastGroupMessage(
   }
 
   groupChat.members.forEach(async (member: any) => {
-    // member is a GroupMembership object with a 'user' field
     const memberUsername = member.user;
-    if (memberUsername === fromUsername) return; // Don't send to sender
+    if (memberUsername === fromUsername) return;
 
     const memberSocket = chatConnectionManager.getSocket(memberUsername);
     if (!memberSocket) {
