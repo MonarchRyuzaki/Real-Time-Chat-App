@@ -74,6 +74,7 @@ coverage/
 
 # Benchmark and performance files
 benchmark/
+scripts/
 *.txt
 
 # Development databases (if any)
