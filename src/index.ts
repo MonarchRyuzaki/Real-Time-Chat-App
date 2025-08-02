@@ -10,6 +10,7 @@ import {
   presenceConnectionManager,
 } from "./services/connectionService";
 import { closePrismaClient, initializePrismaClient } from "./services/prisma";
+import { redisService } from "./services/Redis";
 import { chatHandler } from "./sockets/chatHandler";
 import { presenceHandler } from "./sockets/presenceHandler";
 import { logger } from "./utils/logger";
@@ -62,6 +63,16 @@ async function initializeDatabases(): Promise<void> {
   } catch (error) {
     logger.error("❌ Failed to connect to Prisma:", error);
     throw new Error("Prisma connection failed - cannot start server");
+  }
+
+  // Initialize Redis
+  logger.info("🔌 Connecting to Redis...");
+  try {
+    await redisService.connect();
+    logger.info("✅ Redis client connected successfully");
+  } catch (error) {
+    logger.error("❌ Failed to connect to Redis:", error);
+    throw new Error("Redis connection failed - cannot start server");
   }
 }
 
