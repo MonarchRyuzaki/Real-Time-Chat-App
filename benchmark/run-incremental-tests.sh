@@ -27,7 +27,7 @@ for arg in "$@"; do
 done
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-RESULTS_DIR="./results"
+RESULTS_DIR="./benchmark/results"
 PHASE_DIR="$RESULTS_DIR/$PHASE_NAME"
 LOG_FILE="$PHASE_DIR/test_execution_${TIMESTAMP}.log"
 
