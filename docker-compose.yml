@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-  # Real-Time Chat Application
   chat-app:
     build:
       context: .
@@ -10,32 +9,10 @@ services:
     container_name: real-time-chat-app
     restart: unless-stopped
     ports:
-      - "3000:3000" # HTTP server port
-      - "4000:4000" # WebSocket server port
-    environment:
-      - NODE_ENV=production
-      - CORS_ORIGIN=*
-      # Astra DB Configuration - these should be set via .env file or passed as secrets
-      - ASTRA_DB_API_ENDPOINT=${ASTRA_DB_API_ENDPOINT}
-      - ASTRA_DB_APPLICATION_TOKEN=${ASTRA_DB_APPLICATION_TOKEN}
-      - ASTRA_DB_CLIENT_ID=${ASTRA_DB_CLIENT_ID}
-      - ASTRA_DB_CLIENT_SECRET=${ASTRA_DB_CLIENT_SECRET}
-      - ASTRA_DB_TOKEN=${ASTRA_DB_TOKEN}
-      - ASTRA_DB_KEYSPACE=${ASTRA_DB_KEYSPACE}
+      - "3000:3000"
+      - "4000:4000"
+      - "4001:4001" 
+    env_file:
+      - .env
     volumes:
-      - ./logs:/app/logs # Mount logs directory
-      - ./secure-connect-my-cassandra-db.zip:/app/secure-connect-my-cassandra-db.zip:ro # Mount Cassandra bundle
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:3000/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - ./logs:/app/logs

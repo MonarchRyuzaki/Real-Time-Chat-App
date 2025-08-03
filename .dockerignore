@@ -82,3 +82,5 @@ scripts/
 *.sqlite
 *.sqlite3
 secure-connect-my-cassandra-db.zip
+.env.local
+.env.production
