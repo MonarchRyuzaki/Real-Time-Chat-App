@@ -1,13 +1,23 @@
-const allUsers = Array.from({ length: 10 }, (_, i) => ({
+import { generateChatId } from "../src/utils/chatId";
+
+// Type definitions for API responses
+interface AuthResponse {
+  message?: string;
+  token?: string;
+  username?: string;
+  error?: string;
+}
+
+const allUsers = Array.from({ length: 100 }, (_, i) => ({
   [`user${i + 1}`]: {
     username: `user${i + 1}`,
     password: `password`,
-    token: null, // Store JWT token here
+    token: null as string | null, // Allow both string and null types
   },
 })).reduce((acc, user) => ({ ...acc, ...user }), {});
 
 let userIdx = 0;
-let targetFriendIdx = userIdx + 1;
+let targetFriendIdx = 1; // Start at 1 instead of userIdx + 1
 
 const groups = [
   "2412992431915008",
@@ -26,13 +36,13 @@ const groups = [
 let groupIdx = 0;
 
 // Authentication cache to avoid repeated logins
-const authCache = new Map();
+const authCache = new Map<string, string>();
 
 // Function to fetch JWT token for a user
-async function getAuthToken(username, password) {
+async function getAuthToken(username: string, password: string): Promise<string | null> {
   // Check cache first
   if (authCache.has(username)) {
-    return authCache.get(username);
+    return authCache.get(username)!;
   }
 
   try {
@@ -44,7 +54,7 @@ async function getAuthToken(username, password) {
       body: JSON.stringify({ username, password }),
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as AuthResponse;
 
     if (response.ok && data.token) {
       // Cache the token
@@ -55,14 +65,14 @@ async function getAuthToken(username, password) {
       return null;
     }
   } catch (error) {
-    console.error(`Authentication error for ${username}:`, error.message);
+    console.error(`Authentication error for ${username}:`, error instanceof Error ? error.message : "Unknown error");
     return null;
   }
 }
 
 module.exports = {
-  async connectHandler(params, context, next) {
-    const user = allUsers[`user${(userIdx % 10) + 1}`];
+  async connectHandler(params: any, context: any, next: any) {
+    const user = allUsers[`user${(userIdx % 100) + 1}`];
     userIdx++;
 
     context.vars.username = user.username;
@@ -85,23 +95,27 @@ module.exports = {
     context.vars.connectStart = performance.now();
     next();
   },
-  postConnectionHandler(context, events, next) {
+  postConnectionHandler(context: any, events: any, next: any) {
     const endTime = performance.now();
     const duration = endTime - context.vars.connectStart;
     events.emit("histogram", "handshake_latency", duration);
     next();
   },
-  handleOneToOne(context, events, next) {
+  handleOneToOne(context: any, events: any, next: any) {
     const targetFriend =
-      allUsers[targetFriendIdx % Object.keys(allUsers).length];
+      allUsers[`user${(targetFriendIdx % 100) + 1}`]; // Fixed: ensure we stay within bounds
     targetFriendIdx++;
-    context.vars.targetFriend = targetFriend;
+    context.vars.targetFriend = targetFriend.username;
+    context.vars.chatId = generateChatId(
+      context.vars.username,
+      targetFriend.username
+    );
     // console.log(
     //   `${context.vars.username} is sending message to ${context.vars.targetFriend}`
     // );
     next();
   },
-  handleGroups(context, events, next) {
+  handleGroups(context: any, events: any, next: any) {
     context.vars.groupId = groups[groupIdx % groups.length];
     // console.log(
     //   `${context.vars.username} is sending message to ${context.vars.groupId}`
@@ -109,12 +123,12 @@ module.exports = {
     groupIdx++;
     next();
   },
-  preMessageSend(context, events, next) {
+  preMessageSend(context: any, events: any, next: any) {
     context.vars.startTime = performance.now();
     // console.log(`Preparing to send message from ${context.vars.username} to ${context.vars.targetFriend}`);
     next();
   },
-  postMessageSend(context, events, next) {
+  postMessageSend(context: any, events: any, next: any) {
     const endTime = performance.now();
     const duration = endTime - context.vars.startTime;
     // console.log(

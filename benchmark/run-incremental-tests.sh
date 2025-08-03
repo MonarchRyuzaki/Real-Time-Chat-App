@@ -177,31 +177,32 @@ scenarios:
             from: '{{ username }}'
             to: '{{ targetFriend }}'
             content: 'Hello, this is a test message!'
+            chatId: '{{ chatId }}'
         - function: 'postMessageSend'
         count: 10
       - think: 1
       - send:
           type: 'DISCONNECT'
 #   - name: 'Group Chat'
-    # engine: ws
-    # weight: 0
-    # flow:
-    #   - connect: 
-    #       function: 'connectHandler'
-    #   - function: 'postConnectionHandler'
-    #   - function: 'handleGroups'
-    #   - loop:
-    #     - function: 'preMessageSend'
-    #     - send:
-    #         type: 'GROUP_CHAT'
-    #         from: '{{ username }}'
-    #         to: '{{ groupId }}'
-    #         content: 'Hello, this is a test message!'
-    #     - function: 'postMessageSend'
-    #     count: 10
-    #   - think: 1
-    #   - send:
-    #       type: 'DISCONNECT'
+#     engine: ws
+#     weight: 0
+#     flow:
+#       - connect: 
+#           function: 'connectHandler'
+#       - function: 'postConnectionHandler'
+#       - function: 'handleGroups'
+#       - loop:
+#         - function: 'preMessageSend'
+#         - send:
+#             type: 'GROUP_CHAT'
+#             from: '{{ username }}'
+#             to: '{{ groupId }}'
+#             content: 'Hello, this is a test message!'
+#         - function: 'postMessageSend'
+#         count: 10
+#       - think: 1
+#       - send:
+#           type: 'DISCONNECT'
 EOF
 
     # Generate result filename in phase directory
