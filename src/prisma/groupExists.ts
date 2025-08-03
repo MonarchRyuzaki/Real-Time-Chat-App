@@ -1,4 +1,4 @@
-import { getPrismaClient } from "../services/prisma";
+import { prisma } from "../services/prisma";
 
 export async function groupExists(groupId: string) {
   try {
@@ -7,7 +7,6 @@ export async function groupExists(groupId: string) {
       return null;
     }
 
-    const prisma = getPrismaClient();
     const group = await prisma.group.findUnique({
       where: {
         groupId: groupId,

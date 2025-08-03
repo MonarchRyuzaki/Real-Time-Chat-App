@@ -2,7 +2,7 @@ import { WebSocket } from "ws";
 import { getOneToOneChatHistory } from "../../cassandra/get_one_to_one_chat_history_by_chat_id";
 import { insertOneToOneChat } from "../../cassandra/insert_one_to_one_chat";
 import { chatConnectionManager } from "../../services/connectionService";
-import { getPrismaClient } from "../../services/prisma";
+import { prisma } from "../../services/prisma";
 import { getClient } from "../../services/redis";
 import {
   GetOneToOneChatHistoryMessage,
@@ -30,7 +30,6 @@ export async function newOnetoOneChatHandler(
   if (!(await WsValidation.validateUser(ws, fromUsername))) return;
 
   try {
-    const prisma = getPrismaClient();
     const existingChatId = generateChatId(fromUsername, toUsername);
 
     const existingChat = await prisma.friendship.findFirst({
@@ -203,7 +202,6 @@ async function deliverMessage(
     const recipientSocket = chatConnectionManager.getSocket(toUsername);
 
     if (!recipientSocket) {
-      const prisma = getPrismaClient();
       await prisma.offlineMessages.create({
         data: {
           username: toUsername,

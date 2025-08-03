@@ -10,7 +10,7 @@ import {
 } from "./utils/startup";
 dotenv.config();
 
-const numCPUs = 2;
+const numCPUs = 1;
 
 export const PORT = 3000;
 export const WS_CHAT_PORT = 4000;
@@ -39,7 +39,7 @@ async function startServer() {
 if (cluster.isPrimary) {
   logger.info(`👑 Primary ${process.pid} is running`);
   logger.info(`Forking for ${numCPUs} CPU cores...`);
-
+  
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
@@ -49,7 +49,6 @@ if (cluster.isPrimary) {
       `Worker ${worker.process.pid} died with code: ${code}, signal: ${signal}`
     );
     logger.info("Starting a new worker...");
-    cluster.fork();
   });
 } else {
   startServer().catch((error) => {
@@ -57,4 +56,3 @@ if (cluster.isPrimary) {
     process.exit(1);
   });
 }
-  

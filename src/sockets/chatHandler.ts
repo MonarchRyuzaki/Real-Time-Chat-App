@@ -1,6 +1,6 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { chatConnectionManager } from "../services/connectionService";
-import { getPrismaClient } from "../services/prisma";
+import { prisma } from "../services/prisma";
 import { MessageHandlerMap } from "../types/handlerTypes";
 import {
   IncomingMessage,
@@ -91,11 +91,26 @@ function handleDisconnect(ws: WebSocket): void {
 }
 
 async function initChatHandler(ws: WebSocket): Promise<void> {
+  // Check if WebSocket is still open before proceeding
+  if (ws.readyState !== WebSocket.OPEN) {
+    console.log(
+      "WebSocket connection closed before initialization could complete"
+    );
+    return;
+  }
+
   const username = chatConnectionManager.getUsername(ws);
   if (!username || !(await WsValidation.validateUser(ws, username))) return;
 
+  // Check again after async operations
+  if (ws.readyState !== WebSocket.OPEN) {
+    console.log(
+      `WebSocket connection closed during initialization for user: ${username}`
+    );
+    return;
+  }
+
   try {
-    const prisma = getPrismaClient();
     const user = await prisma.user.findUnique({
       where: { username: username },
       include: {
@@ -132,7 +147,7 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
           offlineMessageSummary[key].from = otherUser;
         } else if (msg.messageType === "GROUP") {
           const group = user.groupMembership.find(
-            (gm) => gm.group === msg.partitionKey
+            (gm: any) => gm.group === msg.partitionKey
           );
           if (group) {
             const groupData = await prisma.group.findUnique({
@@ -153,9 +168,9 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
     WsResponse.custom(ws, {
       type: "INIT_DATA",
       chatIds: user.friendships1
-        .map((f) => f.chatId)
-        .concat(user.friendships2.map((f) => f.chatId)),
-      groups: user.groupMembership.map((group) => group.group) || [],
+        .map((f: any) => f.chatId)
+        .concat(user.friendships2.map((f: any) => f.chatId)),
+      groups: user.groupMembership.map((group: any) => group.group) || [],
       offlineMessages:
         Object.entries(offlineMessageSummary).map(
           ([partitionKey, summary]) => ({
@@ -188,8 +203,6 @@ async function offlineMessagesAckHandler(
   if (!username || !(await WsValidation.validateUser(ws, username))) return;
 
   try {
-    const prisma = getPrismaClient();
-
     await prisma.offlineMessages.deleteMany({
       where: {
         username: username,

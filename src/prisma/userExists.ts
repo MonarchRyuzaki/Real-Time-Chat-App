@@ -1,4 +1,4 @@
-import { getPrismaClient } from "../services/prisma";
+import { prisma } from "../services/prisma";
 
 export async function userExists(username: string): Promise<boolean> {
   try {
@@ -7,7 +7,6 @@ export async function userExists(username: string): Promise<boolean> {
       return false;
     }
 
-    const prisma = getPrismaClient();
     const user = await prisma.user.findUnique({
       where: { username: username },
     });

@@ -7,9 +7,8 @@ export const WsResponse = {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: "ERROR", msg: message }));
       } else {
-        console.error(
-          "Cannot send error message - WebSocket is not open:",
-          message
+        console.warn(
+          `Cannot send error message - WebSocket state: ${ws.readyState}. Message: ${message}`
         );
       }
     } catch (error) {
@@ -22,9 +21,8 @@ export const WsResponse = {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: "INFO", msg: message }));
       } else {
-        console.error(
-          "Cannot send info message - WebSocket is not open:",
-          message
+        console.warn(
+          `Cannot send info message - WebSocket state: ${ws.readyState}. Message: ${message}`
         );
       }
     } catch (error) {
@@ -37,9 +35,8 @@ export const WsResponse = {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: "SUCCESS", msg: message }));
       } else {
-        console.error(
-          "Cannot send success message - WebSocket is not open:",
-          message
+        console.warn(
+          `Cannot send success message - WebSocket state: ${ws.readyState}. Message: ${message}`
         );
       }
     } catch (error) {
@@ -52,17 +49,16 @@ export const WsResponse = {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify(data));
       } else {
-        console.error(
-          "Cannot send custom message - WebSocket is not open:",
-          data
+        console.warn(
+          `Cannot send custom message - WebSocket state: ${ws.readyState}. Type: ${data.type}`
         );
       }
     } catch (error) {
       console.error(
         "Error sending custom message via WebSocket:",
         error,
-        "Data:",
-        data
+        "Data type:",
+        data.type
       );
     }
   },

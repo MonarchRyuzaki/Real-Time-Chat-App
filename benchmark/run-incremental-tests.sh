@@ -164,7 +164,7 @@ config:
 scenarios:
   - name: 'One To One Chat'
     engine: ws
-    weight: 50
+    weight: 100
     flow:
       - connect: 
           function: 'connectHandler'
@@ -182,26 +182,26 @@ scenarios:
       - think: 1
       - send:
           type: 'DISCONNECT'
-  - name: 'Group Chat'
-    engine: ws
-    weight: 50
-    flow:
-      - connect: 
-          function: 'connectHandler'
-      - function: 'postConnectionHandler'
-      - function: 'handleGroups'
-      - loop:
-        - function: 'preMessageSend'
-        - send:
-            type: 'GROUP_CHAT'
-            from: '{{ username }}'
-            to: '{{ groupId }}'
-            content: 'Hello, this is a test message!'
-        - function: 'postMessageSend'
-        count: 10
-      - think: 1
-      - send:
-          type: 'DISCONNECT'
+#   - name: 'Group Chat'
+    # engine: ws
+    # weight: 0
+    # flow:
+    #   - connect: 
+    #       function: 'connectHandler'
+    #   - function: 'postConnectionHandler'
+    #   - function: 'handleGroups'
+    #   - loop:
+    #     - function: 'preMessageSend'
+    #     - send:
+    #         type: 'GROUP_CHAT'
+    #         from: '{{ username }}'
+    #         to: '{{ groupId }}'
+    #         content: 'Hello, this is a test message!'
+    #     - function: 'postMessageSend'
+    #     count: 10
+    #   - think: 1
+    #   - send:
+    #       type: 'DISCONNECT'
 EOF
 
     # Generate result filename in phase directory

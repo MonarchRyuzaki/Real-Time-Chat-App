@@ -2,7 +2,7 @@ import { WebSocket } from "ws";
 import { getGroupChatMessage } from "../../cassandra/get_group_chat_message";
 import { insertGroupChatMessage } from "../../cassandra/insert_group_chat_message";
 import { chatConnectionManager } from "../../services/connectionService";
-import { getPrismaClient } from "../../services/prisma";
+import { prisma } from "../../services/prisma";
 import {
   CreateGroupChatMessage,
   GetGroupChatHistoryMessage,
@@ -29,7 +29,6 @@ export async function createGroupChatHandler(
   const groupChatId = snowflakeIdGenerator();
 
   try {
-    const prisma = getPrismaClient();
     await prisma.group.create({
       data: {
         groupId: groupChatId,
@@ -65,8 +64,6 @@ export async function joinGroupChatHandler(
   if (!(await WsValidation.validateGroup(ws, groupId))) return;
 
   try {
-    const prisma = getPrismaClient();
-
     const alreadyMember = await prisma.groupMembership.findFirst({
       where: {
         group: groupId,
@@ -106,7 +103,6 @@ async function notifyGroupMembers(
   excludeSocket: WebSocket
 ): Promise<void> {
   try {
-    const prisma = getPrismaClient();
     const groupChat = await prisma.group.findUnique({
       where: { groupId },
       include: { members: true },
@@ -114,7 +110,7 @@ async function notifyGroupMembers(
 
     if (!groupChat) return;
 
-    groupChat.members.forEach((member) => {
+    groupChat.members.forEach((member: any) => {
       const memberSocket = chatConnectionManager.getSocket(member.user);
       if (memberSocket && memberSocket !== excludeSocket) {
         WsResponse.custom(memberSocket, {
@@ -164,7 +160,6 @@ export async function groupChatHandler(
   if (!(await WsValidation.validateGroup(ws, groupId))) return;
 
   try {
-    const prisma = getPrismaClient();
     const groupChat = await prisma.group.findUnique({
       where: { groupId },
       include: { members: true },
@@ -200,7 +195,6 @@ async function broadcastGroupMessage(
     return;
   }
 
-  const prisma = getPrismaClient();
   const offlineUsersData = [];
   for (const memeber of groupChat.members) {
     const memberUsername = memeber.user;

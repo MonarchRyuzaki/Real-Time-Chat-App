@@ -1,12 +1,11 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { getPrismaClient } from "../services/prisma";
+import { prisma } from "../services/prisma";
 
 export async function register(req: Request, res: Response): Promise<void> {
   try {
     const { username, password } = req.body;
-    const prisma = getPrismaClient();
 
     // Check if username already exists
     const existingUser = await prisma.user.findUnique({
@@ -43,7 +42,6 @@ export async function register(req: Request, res: Response): Promise<void> {
 export async function login(req: Request, res: Response): Promise<void> {
   try {
     const { username, password } = req.body;
-    const prisma = getPrismaClient();
 
     // Find user by username
     const user = await prisma.user.findUnique({

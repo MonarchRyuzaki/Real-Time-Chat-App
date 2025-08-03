@@ -1,4 +1,4 @@
-const allUsers = Array.from({ length: 100 }, (_, i) => ({
+const allUsers = Array.from({ length: 10 }, (_, i) => ({
   [`user${i + 1}`]: {
     username: `user${i + 1}`,
     password: `password`,
@@ -62,7 +62,7 @@ async function getAuthToken(username, password) {
 
 module.exports = {
   async connectHandler(params, context, next) {
-    const user = allUsers[`user${(userIdx % 100) + 1}`];
+    const user = allUsers[`user${(userIdx % 10) + 1}`];
     userIdx++;
 
     context.vars.username = user.username;

@@ -4,7 +4,7 @@ import {
   chatConnectionManager,
   presenceConnectionManager,
 } from "../services/connectionService";
-import { closePrismaClient } from "../services/prisma";
+import { prisma } from "../services/prisma";
 import { disconnectFromRedis } from "../services/redis";
 import { logger } from "./logger";
 
@@ -43,9 +43,7 @@ export async function gracefulShutdown() {
     closeCassandraClient().catch((error) => {
       logger.error("Error closing Cassandra client:", error);
     }),
-    closePrismaClient().catch((error) => {
-      logger.error("Error closing Prisma client:", error);
-    }),
+    prisma.$disconnect(),
   ];
 
   try {

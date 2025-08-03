@@ -14,8 +14,15 @@ export class ConnectionManager {
       }
     }
 
-    this.userToSocket.set(username, socket);
-    this.socketToUser.set(socket, username);
+    // Only set the connection if the socket is still open
+    if (socket.readyState === WebSocket.OPEN) {
+      this.userToSocket.set(username, socket);
+      this.socketToUser.set(socket, username);
+    } else {
+      console.warn(
+        `Attempted to set connection for ${username} but WebSocket is not open (state: ${socket.readyState})`
+      );
+    }
   }
 
   removeConnection(socket: WebSocket): void {
@@ -39,8 +46,19 @@ export class ConnectionManager {
     }
   }
 
+  // Enhanced getSocket method that checks connection state
   getSocket(username: string): WebSocket | undefined {
-    return this.userToSocket.get(username);
+    const socket = this.userToSocket.get(username);
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      return socket;
+    } else if (socket) {
+      // Clean up stale connection
+      console.warn(
+        `Removing stale connection for user ${username} (state: ${socket.readyState})`
+      );
+      this.removeConnection(socket);
+    }
+    return undefined;
   }
 
   getUsername(socket: WebSocket): string | undefined {

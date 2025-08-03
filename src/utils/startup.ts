@@ -6,7 +6,7 @@ import {
   chatConnectionManager,
   presenceConnectionManager,
 } from "../services/connectionService";
-import { initializePrismaClient } from "../services/prisma";
+import { prisma } from "../services/prisma";
 import { connectToRedis } from "../services/redis";
 import { chatHandler } from "../sockets/chatHandler";
 import { presenceHandler } from "../sockets/presenceHandler";
@@ -47,7 +47,7 @@ export async function initializeDatabases(): Promise<void> {
 
   logger.info("🔌 Connecting to Prisma database...");
   try {
-    await initializePrismaClient();
+    await prisma.$connect();
     logger.info("✅ Prisma client connected successfully");
   } catch (error) {
     logger.error("❌ Failed to connect to Prisma:", error);
