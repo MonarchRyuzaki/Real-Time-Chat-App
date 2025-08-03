@@ -155,7 +155,7 @@ for ((i=start_index; i<${#TEST_CONFIGS[@]}; i++)); do
     cat > "$temp_config" << EOF
 config:
   target: 'ws://localhost:4000'
-  processor: './artillery-processor.ts'
+  processor: './benchmark/artillery-processor.ts'
   phases:
     - duration: $duration
       arrivalRate: $arrival_rate
@@ -169,7 +169,6 @@ scenarios:
       - connect: 
           function: 'connectHandler'
       - function: 'postConnectionHandler'
-      - function: 'handleOneToOne'
       - loop:
         - function: 'preMessageSend'
         - send:
