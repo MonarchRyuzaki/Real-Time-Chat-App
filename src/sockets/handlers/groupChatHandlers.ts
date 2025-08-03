@@ -200,35 +200,46 @@ async function broadcastGroupMessage(
     return;
   }
 
-  groupChat.members.forEach(async (member: any) => {
-    const memberUsername = member.user;
-    if (memberUsername === fromUsername) return;
+  const prisma = getPrismaClient();
+  const offlineUsersData = [];
+  for (const memeber of groupChat.members) {
+    const memberUsername = memeber.user;
+    if (memberUsername === fromUsername) continue;
 
     const memberSocket = chatConnectionManager.getSocket(memberUsername);
     if (!memberSocket) {
-      const prisma = getPrismaClient();
-      await prisma.offlineMessages.create({
-        data: {
-          username: memberUsername,
-          messageId,
-          partitionKey: groupId,
-          messageType: "GROUP",
-        },
+      offlineUsersData.push({
+        username: memberUsername,
+        messageId,
+        partitionKey: groupId,
+        messageType: "GROUP" as any,
       });
-      return;
+    } else {
+      try {
+        WsResponse.custom(memberSocket, {
+          type: "GROUP_CHAT",
+          from: fromUsername,
+          groupId,
+          content: messageContent,
+        });
+      } catch (error) {
+        console.error(
+          `Error sending message to group member ${memberUsername}:`,
+          error
+        );
+      }
     }
+  }
+
+  if (offlineUsersData.length > 0) {
     try {
-      WsResponse.custom(memberSocket, {
-        type: "GROUP_CHAT",
-        from: fromUsername,
-        groupId,
-        content: messageContent,
+      await prisma.offlineMessages.createMany({
+        data: offlineUsersData,
+        skipDuplicates: true,
       });
+      console.log("Offline messages saved for group members.");
     } catch (error) {
-      console.error(
-        `Error sending message to group member ${memberUsername}:`,
-        error
-      );
+      console.error("Error saving offline messages:", error);
     }
-  });
+  }
 }
