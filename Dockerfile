@@ -8,6 +8,9 @@ RUN npm i
 
 COPY . .
 
+# Generate Prisma client
+RUN npm run db:generate
+
 RUN npm run build
 
 FROM node:22-alpine AS production
@@ -19,6 +22,8 @@ COPY package*.json ./
 RUN npm i --only=production && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
+# Copy the generated Prisma client
+COPY --from=builder /app/src/generated ./src/generated
 
 EXPOSE 3000 4000 4001
 

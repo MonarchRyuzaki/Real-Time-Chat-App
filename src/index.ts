@@ -10,7 +10,7 @@ import {
 } from "./utils/startup";
 dotenv.config();
 
-const numCPUs = os.cpus().length;
+const numCPUs = 2;
 
 export const PORT = 3000;
 export const WS_CHAT_PORT = 4000;
