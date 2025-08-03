@@ -180,7 +180,6 @@ export async function groupChatHandler(
     console.log(`Group message sent by ${fromUsername} to group ${groupId}`);
   } catch (error) {
     console.error("Error in groupChatHandler:", error);
-    WsResponse.error(ws, "Failed to send group message.");
   }
 }
 

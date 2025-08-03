@@ -186,7 +186,10 @@ export async function oneToOneChatHandler(
     );
   } catch (error) {
     console.error("Error in oneToOneChatHandler:", error);
-    WsResponse.error(ws, "Failed to send message. Please try again.");
+    // Only send error if WebSocket is still open
+    if (ws.readyState === WebSocket.OPEN) {
+      WsResponse.error(ws, "Failed to send message. Please try again.");
+    }
   }
 }
 

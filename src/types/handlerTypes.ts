@@ -19,6 +19,7 @@ export type MessageHandler<T extends IncomingMessage = IncomingMessage> = (
 ) => Promise<void> | void;
 
 // Specific handler types for type safety
+export type InitChatHandler = MessageHandler;
 export type NewOneToOneChatHandler = MessageHandler<NewOneToOneChatMessage>;
 export type OneToOneChatHandler = MessageHandler<OneToOneChatMessage>;
 export type GetOneToOneChatHistoryHandler =
@@ -34,6 +35,7 @@ export type DisconnectHandler = MessageHandler<DisconnectMessage>;
 
 // Message handler map interface
 export interface MessageHandlerMap {
+  INIT_DATA: InitChatHandler;
   NEW_ONE_TO_ONE_CHAT: NewOneToOneChatHandler;
   GET_ONE_TO_ONE_HISTORY: GetOneToOneChatHistoryHandler;
   ONE_TO_ONE_CHAT: OneToOneChatHandler;

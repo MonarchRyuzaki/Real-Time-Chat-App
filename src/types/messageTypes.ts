@@ -57,6 +57,10 @@ export interface DisconnectMessage extends BaseMessage {
   type: "DISCONNECT";
 }
 
+export interface FetchFriendsMetaMessage extends BaseMessage {
+  type: "FETCH_FRIENDS_META";
+}
+
 // Union type for all incoming messages
 export type IncomingMessage =
   | NewOneToOneChatMessage
@@ -67,4 +71,5 @@ export type IncomingMessage =
   | GroupChatMessage
   | GetGroupChatHistoryMessage
   | OfflineMessagesAckMessage
-  | DisconnectMessage;
+  | DisconnectMessage
+  | FetchFriendsMetaMessage;

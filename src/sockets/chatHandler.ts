@@ -3,6 +3,7 @@ import { chatConnectionManager } from "../services/connectionService";
 import { prisma } from "../services/prisma";
 import { MessageHandlerMap } from "../types/handlerTypes";
 import {
+  FetchFriendsMetaMessage,
   IncomingMessage,
   OfflineMessagesAckMessage,
 } from "../types/messageTypes";
@@ -21,12 +22,8 @@ import {
 } from "./handlers/oneToOneChatHandlers";
 
 export function chatHandler(ws: WebSocket, wss: WebSocketServer): void {
-  initChatHandler(ws).catch((error) => {
-    console.error("Error initializing chat handler:", error);
-    WsResponse.error(ws, "Failed to initialize chat session.");
-  });
-
   const messageHandler: MessageHandlerMap = {
+    INIT_DATA: initChatHandler,
     NEW_ONE_TO_ONE_CHAT: newOnetoOneChatHandler,
     GET_ONE_TO_ONE_HISTORY: getOneToOneChatHistoryHandler,
     ONE_TO_ONE_CHAT: oneToOneChatHandler,
@@ -58,20 +55,23 @@ function handleMessage(
   messageHandler: MessageHandlerMap
 ): void {
   try {
+    // Check if WebSocket is still open before processing
+    if (ws.readyState !== WebSocket.OPEN) {
+      console.warn("Received message on closed WebSocket connection");
+      return;
+    }
+
     const parsed = JSON.parse(data) as IncomingMessage;
     const handler = messageHandler[parsed.type as keyof MessageHandlerMap];
 
     if (handler) {
       Promise.resolve(handler(ws, parsed as any)).catch((error) => {
-        console.error(`Error in ${parsed.type} handler:`, error);
-        WsResponse.error(ws, `Failed to process ${parsed.type} request.`);
+        console.error("Error handling message:", error);
       });
     } else {
-      WsResponse.error(ws, `Unknown message type: ${parsed.type}`);
       console.error("Unknown message type:", parsed.type);
     }
   } catch (error) {
-    WsResponse.error(ws, "Invalid message format.");
     console.error("Error parsing message:", error);
   }
 }
@@ -122,7 +122,6 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
     });
 
     if (!user) {
-      WsResponse.error(ws, "User data not found.");
       return;
     }
 
@@ -191,7 +190,6 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
       username,
       error
     );
-    WsResponse.error(ws, "Failed to load chat data.");
   }
 }
 
@@ -213,7 +211,6 @@ async function offlineMessagesAckHandler(
     console.log(`Offline messages acknowledged for user: ${username}`);
   } catch (error) {
     console.error("Error acknowledging offline messages:", error);
-    WsResponse.error(ws, "Failed to acknowledge offline messages.");
   }
 }
 
@@ -223,11 +220,14 @@ function disconnectHandler(ws: WebSocket): void {
   try {
     if (username) {
       chatConnectionManager.removeConnection(ws);
-      WsResponse.info(ws, "You have been disconnected.");
+      // Only send response if WebSocket is still open
+      if (ws.readyState === WebSocket.OPEN) {
+        WsResponse.info(ws, "You have been disconnected.");
+      }
       console.log(`User ${username} disconnected gracefully`);
     } else {
       console.log("Disconnect handler called for unknown user");
-      WsResponse.info(ws, "You have been disconnected.");
+      // Don't send response to unknown user connections
     }
   } catch (error) {
     console.error("Error in disconnectHandler:", error);
