@@ -1,24 +1,16 @@
 import dotenv from "dotenv";
-import { createHttpServer } from "./server/http";
-import { closeAllWebSocketServers, createWebSocketServer } from "./server/ws";
-import {
-  closeCassandraClient,
-  initializeCassandraClient,
-} from "./services/cassandra";
-import {
-  chatConnectionManager,
-  presenceConnectionManager,
-} from "./services/connectionService";
-import { closePrismaClient, initializePrismaClient } from "./services/prisma";
-import { connectToRedis, disconnectFromRedis } from "./services/redis";
-import { chatHandler } from "./sockets/chatHandler";
-import { presenceHandler } from "./sockets/presenceHandler";
 import { logger } from "./utils/logger";
+import cluster from "cluster";
+import os from "os";
+import { initializeDatabases, startHttpServer, startWebSocketServers } from "./utils/startup";
+import { gracefulShutdown, setupShutdownHandlers } from "./utils/shutdown";
 dotenv.config();
 
-const PORT = 3000;
-const WS_CHAT_PORT = 4000;
-const WS_PRESENCE_PORT = 4001;
+const numCPUs = os.cpus().length;
+
+export const PORT = 3000;
+export const WS_CHAT_PORT = 4000;
+export const WS_PRESENCE_PORT = 4001;
 
 async function startServer() {
   try {
@@ -36,131 +28,6 @@ async function startServer() {
   } catch (error) {
     logger.error("❌ Failed to start server:", error);
     await gracefulShutdown();
-    process.exit(1);
-  }
-}
-
-async function initializeDatabases(): Promise<void> {
-  logger.info("🔌 Connecting to Cassandra database...");
-  try {
-    await initializeCassandraClient();
-    logger.info("✅ Cassandra client connected successfully");
-  } catch (error) {
-    logger.error("❌ Failed to connect to Cassandra:", error);
-    throw new Error("Cassandra connection failed - cannot start server");
-  }
-
-  logger.info("🔌 Connecting to Prisma database...");
-  try {
-    await initializePrismaClient();
-    logger.info("✅ Prisma client connected successfully");
-  } catch (error) {
-    logger.error("❌ Failed to connect to Prisma:", error);
-    throw new Error("Prisma connection failed - cannot start server");
-  }
-
-  logger.info("🔌 Connecting to Redis...");
-  try {
-    await connectToRedis();
-    logger.info("✅ Redis client connected successfully");
-  } catch (error) {
-    logger.error("❌ Failed to connect to Redis:", error);
-    throw new Error("Redis connection failed - cannot start server");
-  }
-}
-
-async function startHttpServer(): Promise<void> {
-  try {
-    const app = createHttpServer();
-    const httpServer = app.listen(PORT, () => {
-      // logger.info(`🚀 HTTP Server is running on port ${PORT}`);
-      //   logger.info(
-      //     `🏥 Health check available at http://localhost:${PORT}/health`
-      //   );
-      //   logger.info(`📚 API routes available at http://localhost:${PORT}/api`);
-    });
-
-    httpServer.on("error", (error) => {
-      logger.error("HTTP Server error:", error);
-    });
-  } catch (error) {
-    logger.error("❌ Failed to start HTTP server:", error);
-    throw new Error("HTTP server startup failed");
-  }
-}
-
-async function startWebSocketServers(): Promise<void> {
-  try {
-    createWebSocketServer({
-      port: WS_CHAT_PORT,
-      handler: chatHandler,
-      connectionManager: chatConnectionManager,
-    });
-    logger.info(`🔌 Chat WebSocket server started on port ${WS_CHAT_PORT}`);
-
-    createWebSocketServer({
-      port: WS_PRESENCE_PORT,
-      handler: presenceHandler,
-      connectionManager: presenceConnectionManager,
-    });
-    logger.info(
-      `👁️ Presence WebSocket server started on port ${WS_PRESENCE_PORT}`
-    );
-  } catch (error) {
-    logger.error("❌ Failed to start WebSocket servers:", error);
-    throw new Error("WebSocket servers startup failed");
-  }
-}
-
-function setupShutdownHandlers(): void {
-  process.on("SIGTERM", gracefulShutdown);
-  process.on("SIGINT", gracefulShutdown);
-  process.on("uncaughtException", (error) => {
-    // logger.error("❌ Uncaught Exception:", error);
-    gracefulShutdown();
-  });
-  process.on("unhandledRejection", (reason, promise) => {
-    // logger.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-    gracefulShutdown();
-  });
-}
-
-async function gracefulShutdown() {
-  logger.info("🛑 Shutting down server gracefully...");
-
-  try {
-    logger.info("Closing WebSocket servers...");
-    await closeAllWebSocketServers();
-  } catch (error) {
-    logger.error("Error closing WebSocket servers:", error);
-  }
-
-  try {
-    logger.info("Closing WebSocket connections...");
-    chatConnectionManager.closeAllConnections();
-    presenceConnectionManager.closeAllConnections();
-  } catch (error) {
-    logger.error("Error closing WebSocket connections:", error);
-  }
-
-  const shutdownPromises = [
-    closeCassandraClient().catch((error) => {
-      logger.error("Error closing Cassandra client:", error);
-    }),
-    closePrismaClient().catch((error) => {
-      logger.error("Error closing Prisma client:", error);
-    }),
-  ];
-
-  try {
-    await Promise.all(shutdownPromises);
-    await disconnectFromRedis();
-
-    logger.info("✅ All services closed successfully");
-    process.exit(0);
-  } catch (error) {
-    logger.error("❌ Error during shutdown:", error);
-    logger.info("🔪 Forcing shutdown...");
     process.exit(1);
   }
 }
