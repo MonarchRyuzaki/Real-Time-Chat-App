@@ -159,6 +159,10 @@ export async function oneToOneChatHandler(
     );
     return;
   }
+  if (!(await WsValidation.validateUser(ws, fromUsername))) return;
+  if (!(await WsValidation.validateUser(ws, toUsername))) return;
+
+  if (!WsValidation.validateSelfChat(ws, fromUsername, toUsername)) return;
 
   try {
     const messageId = snowflakeIdGenerator();
@@ -205,6 +209,9 @@ async function deliverMessage(
     const recipientSocket = chatConnectionManager.getSocket(toUsername);
 
     if (!recipientSocket) {
+      console.log(
+        `User ${toUsername} is not online. Saving message for later delivery.`
+      );
       await prisma.offlineMessages.create({
         data: {
           username: toUsername,
@@ -215,7 +222,7 @@ async function deliverMessage(
       });
       return;
     }
-
+    console.log(`Delivering message to ${toUsername}`);
     WsResponse.custom(recipientSocket, {
       type: "MESSAGE",
       from: fromUsername,
