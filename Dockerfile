@@ -22,8 +22,8 @@ COPY package*.json ./
 RUN npm i --only=production && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
-# Copy the generated Prisma client
-COPY --from=builder /app/src/generated ./src/generated
+
+COPY --from=builder /app/src/generated ./dist/generated
 
 EXPOSE 3000 4000 4001
 
