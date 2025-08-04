@@ -4,6 +4,7 @@ import { CacheLayer } from "./CacheLayer";
 
 interface User {
   username: string;
+  password: string;
 }
 
 let userCache: CacheLayer<User> | null = null;

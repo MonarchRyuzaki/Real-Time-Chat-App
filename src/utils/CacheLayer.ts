@@ -28,4 +28,11 @@ export class CacheLayer<T> {
 
     return fromDb;
   }
+
+  async set(id: string): Promise<boolean> {
+    const key = this.getKey(id);
+
+    await this.bloomAddFn(key);
+    return true;
+  }
 }
