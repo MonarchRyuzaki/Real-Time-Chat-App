@@ -1,6 +1,7 @@
 import { WebSocket } from "ws";
 import { getOneToOneChatHistory } from "../../cassandra/get_one_to_one_chat_history_by_chat_id";
 import { insertOneToOneChat } from "../../cassandra/insert_one_to_one_chat";
+import { enqueueOfflineMessages } from "../../queue/offlineQueue";
 import { chatConnectionManager } from "../../services/connectionService";
 import { prisma } from "../../services/prisma";
 import { getClient } from "../../services/redis";
@@ -212,13 +213,11 @@ async function deliverMessage(
       console.log(
         `User ${toUsername} is not online. Saving message for later delivery.`
       );
-      await prisma.offlineMessages.create({
-        data: {
-          username: toUsername,
-          messageId: messageId,
-          partitionKey: chatId,
-          messageType: "ONE_TO_ONE",
-        },
+      await enqueueOfflineMessages({
+        username: toUsername,
+        messageId: messageId,
+        partitionKey: chatId,
+        messageType: "ONE_TO_ONE",
       });
       return;
     }

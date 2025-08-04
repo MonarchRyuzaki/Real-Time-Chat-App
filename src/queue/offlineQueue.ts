@@ -3,7 +3,7 @@ import { getIoClient } from "../services/ioredis";
 
 let offlineQueue: Queue | null = null;
 
-async function getOfflineQueue(): Promise<Queue> {
+export async function getOfflineQueue(): Promise<Queue> {
   if (!offlineQueue) {
     const ioredis = await getIoClient();
     offlineQueue = new Queue("offline-messages", {

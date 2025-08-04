@@ -1,4 +1,5 @@
 import { PORT, WS_CHAT_PORT, WS_PRESENCE_PORT } from "..";
+import { getOfflineQueue } from "../queue/offlineQueue";
 import { createHttpServer } from "../server/http";
 import { createWebSocketServer } from "../server/ws";
 import { initializeCassandraClient } from "../services/cassandra";
@@ -67,6 +68,15 @@ export async function initializeDatabases(): Promise<void> {
   logger.info("🔌 Connecting to Io Redis...");
   try {
     await connectToIoRedis();
+    logger.info("✅ Redis client connected successfully");
+  } catch (error) {
+    logger.error("❌ Failed to connect to Redis:", error);
+    throw new Error("Redis connection failed - cannot start server");
+  }
+
+  logger.info("🔌 Connecting to Offline Messages Queue...");
+  try {
+    await getOfflineQueue();
     logger.info("✅ Redis client connected successfully");
   } catch (error) {
     logger.error("❌ Failed to connect to Redis:", error);
