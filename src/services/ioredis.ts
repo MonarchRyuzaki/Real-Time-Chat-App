@@ -18,8 +18,12 @@ export async function connectToIoRedis() {
     port: parseInt(process.env.REDIS_PORT),
     username: "default",
     password: process.env.REDIS_PASSWORD,
+    lazyConnect: true, // Prevent automatic connection
   });
+
+  // Manually connect and wait for ready state
   await client.connect();
+
   console.log("Connected to Redis");
   return client;
 }
