@@ -6,6 +6,7 @@ import {
   chatConnectionManager,
   presenceConnectionManager,
 } from "../services/connectionService";
+import { connectToIoRedis } from "../services/ioredis";
 import { prisma } from "../services/prisma";
 import { connectToRedis } from "../services/redis";
 import { chatHandler } from "../sockets/chatHandler";
@@ -57,6 +58,15 @@ export async function initializeDatabases(): Promise<void> {
   logger.info("🔌 Connecting to Redis...");
   try {
     await connectToRedis();
+    logger.info("✅ Redis client connected successfully");
+  } catch (error) {
+    logger.error("❌ Failed to connect to Redis:", error);
+    throw new Error("Redis connection failed - cannot start server");
+  }
+
+  logger.info("🔌 Connecting to Io Redis...");
+  try {
+    await connectToIoRedis();
     logger.info("✅ Redis client connected successfully");
   } catch (error) {
     logger.error("❌ Failed to connect to Redis:", error);

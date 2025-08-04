@@ -4,6 +4,7 @@ import {
   chatConnectionManager,
   presenceConnectionManager,
 } from "../services/connectionService";
+import { disconnectFromIoRedis } from "../services/ioredis";
 import { prisma } from "../services/prisma";
 import { disconnectFromRedis } from "../services/redis";
 import { logger } from "./logger";
@@ -49,6 +50,7 @@ export async function gracefulShutdown() {
   try {
     await Promise.all(shutdownPromises);
     await disconnectFromRedis();
+    await disconnectFromIoRedis();
 
     logger.info("✅ All services closed successfully");
     process.exit(0);
