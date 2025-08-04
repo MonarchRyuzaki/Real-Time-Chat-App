@@ -8,6 +8,7 @@ import {
   startHttpServer,
   startWebSocketServers,
 } from "./utils/startup";
+import { FLUSH_INTERVAL, flushOfflineMessages } from "./queue/offlineWorker";
 dotenv.config();
 
 const numCPUs = 1;
@@ -25,6 +26,8 @@ async function startServer() {
     await startHttpServer();
 
     await startWebSocketServers();
+
+    setInterval(flushOfflineMessages, FLUSH_INTERVAL);
 
     logger.info("✅ All services started successfully");
     logger.info(`✅ Worker ${process.pid} started all services successfully.`);

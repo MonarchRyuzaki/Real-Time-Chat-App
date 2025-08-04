@@ -2,10 +2,10 @@ import { getIoClient } from "../services/ioredis";
 import { prisma } from "../services/prisma";
 import { getOfflineQueue } from "./offlineQueue";
 
-const MAX_BATCH_SIZE = 100;
-const FLUSH_INTERVAL = 30 * 1000;
+export const MAX_BATCH_SIZE = 100;
+export const FLUSH_INTERVAL = 30 * 1000;
 
-async function flushOfflineMessages() {
+export async function flushOfflineMessages() {
   const offlineQueue = await getOfflineQueue();
 
   const jobs = await offlineQueue.getJobs(["waiting"], 0, MAX_BATCH_SIZE - 1);
@@ -30,5 +30,3 @@ async function flushOfflineMessages() {
     console.error("❌ Failed to flush messages:", error);
   }
 }
-
-setInterval(flushOfflineMessages, FLUSH_INTERVAL);
