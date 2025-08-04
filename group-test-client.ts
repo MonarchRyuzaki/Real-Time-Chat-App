@@ -269,6 +269,11 @@ async function connectToWebSocket(): Promise<void> {
       clearTimeout(connectionTimeout);
       isConnecting = false;
       console.log("✅ Connected to group chat server!");
+
+      // Send INIT_DATA message to trigger server initialization
+      console.log("📤 Sending initialization request...");
+      ws.send(JSON.stringify({ type: "INIT_DATA" }));
+
       resolve();
     });
 
