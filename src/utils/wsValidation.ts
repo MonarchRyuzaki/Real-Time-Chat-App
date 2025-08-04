@@ -1,6 +1,6 @@
 import { WebSocket } from "ws";
 import { groupExists } from "../prisma/groupExists";
-import { userExists } from "../prisma/userExists";
+import { getUserCache } from "./userCache";
 import { WsResponse } from "./wsResponse";
 
 export const WsValidation = {
@@ -12,7 +12,8 @@ export const WsValidation = {
       }
 
       try {
-        const exists = await userExists(username);
+        const userCache = await getUserCache();
+        const exists = await userCache.get(username);
         if (!exists) {
           WsResponse.error(ws, `User ${username} does not exist.`);
           return false;
