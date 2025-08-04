@@ -22,8 +22,7 @@ export class CacheLayer<T> {
 
     const fromDb = await this.dbGetFn(id);
     if (fromDb !== null) {
-      await this.bloomAddFn(key);
-      await this.redisSetFn(key, fromDb);
+      await Promise.all([this.bloomAddFn(key), this.redisSetFn(key, fromDb)]);
     }
 
     return fromDb;
