@@ -13,7 +13,7 @@ interface AuthResponse {
 
 const allUsers = Array.from({ length: 100 }, (_, i) => ({
   [`user${i + 1}`]: {
-    username: `user${i + 1}`,
+    username: `new_user${i + 1}`,
     password: `password`,
     token: null as string | null,
   },
@@ -104,7 +104,7 @@ module.exports = {
   async connectHandler(params: any, context: any, next: any) {
     try {
       const redis = await getRedisClient();
-      const idx = await redis.incr("user_idx");
+      const idx = await redis.incr("new_user_idx");
       if (!idx) {
         console.error("Failed to get user index from Redis");
         return;

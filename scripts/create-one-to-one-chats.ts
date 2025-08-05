@@ -71,7 +71,7 @@ async function createOneToOneChatsViaWebSocket() {
     // Create ALL possible friendships between user1-user100
     for (let i = 1; i <= 100; i++) {
       for (let j = i + 1; j <= 100; j++) {
-        userPairs.push([`user${i}`, `user${j}`]);
+        userPairs.push([`new_user${i}`, `new_user${j}`]);
       }
     }
 
@@ -94,12 +94,11 @@ async function createOneToOneChatsViaWebSocket() {
 
         const client: TestClient = { username, ws, isReady: false, authToken };
 
-        const timeout = setTimeout(() => {
-          reject(new Error(`Connection timeout for ${username}`));
-        }, 10000);
-
         ws.on("open", () => {
           console.log(`✅ ${username} connected with authentication`);
+
+          // Send INIT_DATA message to trigger server initialization
+          ws.send(JSON.stringify({ type: "INIT_DATA" }));
         });
 
         ws.on("message", (data) => {
@@ -107,7 +106,7 @@ async function createOneToOneChatsViaWebSocket() {
 
           if (message.type === "INIT_DATA") {
             client.isReady = true;
-            clearTimeout(timeout);
+            console.log(`🔄 ${username} initialized and ready`);
             resolve(client);
           } else if (message.type === "NEW_ONE_TO_ONE_CHAT_AP") {
             if (message.to) {
@@ -126,13 +125,11 @@ async function createOneToOneChatsViaWebSocket() {
         });
 
         ws.on("error", (error) => {
-          clearTimeout(timeout);
           console.error(`❌ WebSocket error for ${username}:`, error);
           reject(error);
         });
 
         ws.on("close", (code, reason) => {
-          clearTimeout(timeout);
           if (code === 1008) {
             reject(
               new Error(`Authentication failed for ${username}: ${reason}`)

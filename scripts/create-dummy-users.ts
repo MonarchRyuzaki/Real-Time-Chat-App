@@ -15,7 +15,7 @@ async function createDummyUsers() {
 
     // Create users sequentially to avoid overwhelming the server
     for (let i = 1; i <= 100; i++) {
-      const username = `user${i}`;
+      const username = `new_user${i}`;
 
       try {
         console.log(`⏳ Creating user ${i}/100: ${username}`);
