@@ -8,13 +8,22 @@ import { getClient } from "../services/redis";
 interface PresenceWebSocket extends WebSocket {
   isAlive?: boolean;
   pingInterval?: NodeJS.Timeout;
+  username?: string
 }
 
-export function presenceHandler(ws: PresenceWebSocket, wss: WebSocketServer) {
+export async function presenceHandler(
+  ws: PresenceWebSocket,
+  wss: WebSocketServer
+) {
   ws.isAlive = true;
-
+  const client = await getClient();
+  const username = presenceConnectionManager.getUsername(ws);
+  if (client && username) {
+    ws.username = username;
+    await client.publish("online", username);
+  }
   ws.on("pong", async () => {
-    const username = presenceConnectionManager.getUsername(ws);
+    const username = ws.username;
     console.log(`Responding to ping ${username}`);
     const client = await getClient();
     if (client) {
@@ -58,18 +67,15 @@ async function cleanupConnection(ws: PresenceWebSocket): Promise<void> {
       ws.pingInterval = undefined;
     }
     const client = await getClient();
-    const username = presenceConnectionManager.getUsername(ws);
+    const username = ws.username;
     if (client) {
       if (username) {
+        await client.publish("offline", username);
         await client.del(`online_users:${username}`);
         console.log(`Removed online status for ${username}`);
       }
     }
     console.log(`${username} is getting clean up`);
-    if (username) {
-      const chatWs = chatConnectionManager.getSocket(username);
-      if (chatWs) chatConnectionManager.removeConnection(chatWs);
-    }
     presenceConnectionManager.removeConnection(ws);
   } catch (error) {
     console.error("Error during presence connection cleanup:", error);

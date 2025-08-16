@@ -1,5 +1,6 @@
 import { PORT, WS_CHAT_PORT, WS_PRESENCE_PORT } from "..";
 import { getOfflineQueue } from "../queue/offlineQueue";
+import { subscribeToPresenceUpdates } from "../redis/presenceSubscriber";
 import { createHttpServer } from "../server/http";
 import { createWebSocketServer } from "../server/ws";
 import { initializeCassandraClient } from "../services/cassandra";
@@ -81,6 +82,15 @@ export async function initializeDatabases(): Promise<void> {
   } catch (error) {
     logger.error("❌ Failed to connect to Redis:", error);
     throw new Error("Redis connection failed - cannot start server");
+  }
+
+  logger.info("🔌 Connecting to Subscriber To Presence Updates...");
+  try {
+    await subscribeToPresenceUpdates();
+    logger.info("✅ Subscriber to presence updates connected successfully");
+  } catch (error) {
+    logger.error("❌ Failed to connect to Subscriber to presence updates:", error);
+    throw new Error("Subscriber to presence updates connection failed - cannot start server");
   }
 }
 
