@@ -78,6 +78,12 @@ export interface GroupChatResponse extends BaseResponse {
   content: string;
 }
 
+export interface StatusChangeResponse extends BaseResponse {
+  type: "STATUS_CHANGE";
+  username: string;
+  status: "ONLINE" | "OFFLINE";
+}
+
 // Union type for all outgoing responses
 export type OutgoingResponse =
   | ErrorResponse
@@ -90,7 +96,8 @@ export type OutgoingResponse =
   | GroupChatCreatedResponse
   | GroupMemberJoinedResponse
   | GroupChatHistoryResponse
-  | GroupChatResponse;
+  | GroupChatResponse
+  | StatusChangeResponse;
 
 // Data model types
 export interface ChatMessage {
