@@ -124,7 +124,7 @@ async function registerUser(
   try {
     console.log("⏳ Registering user...");
 
-    const response = await fetch("http://localhost:3000/api/auth/register", {
+    const response = await fetch("http://localhost/api/auth/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -150,7 +150,7 @@ async function registerUser(
       error instanceof Error ? error.message : "Unknown error"
     );
     console.log(
-      "Please check if the server is running on http://localhost:3000"
+      "Please check if the server is running on http://localhost/api/auth"
     );
     return false;
   }
@@ -163,7 +163,7 @@ async function loginUser(
   try {
     console.log("⏳ Logging in...");
 
-    const response = await fetch("http://localhost:3000/api/auth/login", {
+    const response = await fetch("http://localhost/api/auth/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -189,7 +189,7 @@ async function loginUser(
       error instanceof Error ? error.message : "Unknown error"
     );
     console.log(
-      "Please check if the server is running on http://localhost:3000"
+      "Please check if the server is running on http://localhost/api/auth"
     );
     return null;
   }
@@ -274,7 +274,7 @@ async function connectToChatWebSocket(): Promise<WebSocket> {
     console.log("📡 Connecting to Chat WebSocket server...");
     isConnecting = true;
 
-    const ws = new WebSocket(`ws://localhost:4000/?username=${username}`, {
+    const ws = new WebSocket(`ws://localhost/ws/chat/?username=${username}`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -311,7 +311,7 @@ async function connectToChatWebSocket(): Promise<WebSocket> {
         console.log("Authentication failed. Please login again.");
       } else {
         console.log(
-          "Please check if the Chat WebSocket server is running on ws://localhost:4000"
+          "Please check if the Chat WebSocket server is running on ws://localhost/ws/chat"
         );
       }
 
@@ -324,7 +324,7 @@ async function connectToPresenceWebSocket(): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
     console.log("📡 Connecting to Presence WebSocket server...");
 
-    const ws = new WebSocket(`ws://localhost:4001?username=${username}`, {
+    const ws = new WebSocket(`ws://localhost/ws/presence/?username=${username}`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -379,7 +379,7 @@ async function connectToPresenceWebSocket(): Promise<WebSocket> {
         console.log("Presence authentication failed. Please login again.");
       } else {
         console.log(
-          "Please check if the Presence WebSocket server is running on ws://localhost:4001"
+          "Please check if the Presence WebSocket server is running on ws://localhost/ws/presence/"
         );
       }
 
