@@ -8,7 +8,7 @@ import { getClient } from "../services/redis";
 interface PresenceWebSocket extends WebSocket {
   isAlive?: boolean;
   pingInterval?: NodeJS.Timeout;
-  username?: string
+  username?: string;
 }
 
 export async function presenceHandler(
@@ -21,6 +21,10 @@ export async function presenceHandler(
   if (client && username) {
     ws.username = username;
     await client.publish("online", username);
+    await client.set(
+      `user-location:${username}`,
+      process.env.SERVER_ID || "default-server"
+    );
   }
   ws.on("pong", async () => {
     const username = ws.username;
@@ -70,8 +74,12 @@ async function cleanupConnection(ws: PresenceWebSocket): Promise<void> {
     const username = ws.username;
     if (client) {
       if (username) {
-        await client.publish("offline", username);
-        await client.del(`online_users:${username}`);
+        await client
+          .multi()
+          .publish("offline", username)
+          .del(`online_users:${username}`)
+          .del(`user-location:${username}`)
+          .exec();
         console.log(`Removed online status for ${username}`);
       }
     }

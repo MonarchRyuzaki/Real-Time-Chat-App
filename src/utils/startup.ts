@@ -1,6 +1,6 @@
 import { PORT, WS_CHAT_PORT, WS_PRESENCE_PORT } from "..";
 import { getOfflineQueue } from "../queue/offlineQueue";
-import { startWorker } from "../redis/chatMessagesStreams";
+import { subscribeToChatMessages } from "../redis/chatSubscriber";
 import { subscribeToPresenceUpdates } from "../redis/presenceSubscriber";
 import { createHttpServer } from "../server/http";
 import { createWebSocketServer } from "../server/ws";
@@ -92,6 +92,15 @@ export async function initializeDatabases(): Promise<void> {
   } catch (error) {
     logger.error("❌ Failed to connect to Subscriber to presence updates:", error);
     throw new Error("Subscriber to presence updates connection failed - cannot start server");
+  }
+
+  logger.info("🔌 Connecting to Chat Messages Subscriber...");
+  try {
+    await subscribeToChatMessages();
+    logger.info("✅ Chat messages subscriber connected successfully");
+  } catch (error) {
+    logger.error("❌ Failed to connect to Chat messages subscriber:", error);
+    throw new Error("Chat messages subscriber connection failed - cannot start server");
   }
 }
 

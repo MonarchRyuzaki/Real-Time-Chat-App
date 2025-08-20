@@ -208,27 +208,6 @@ async function deliverMessage(
   senderSocket: WebSocket
 ): Promise<void> {
   try {
-    // const recipientSocket = chatConnectionManager.getSocket(toUsername);
-
-    // if (!recipientSocket) {
-    //   console.log(
-    //     `User ${toUsername} is not online. Saving message for later delivery.`
-    //   );
-    //   await enqueueOfflineMessages({
-    //     username: toUsername,
-    //     messageId: messageId,
-    //     partitionKey: chatId,
-    //     messageType: "ONE_TO_ONE",
-    //   });
-    //   return;
-    // }
-    // console.log(`Delivering message to ${toUsername}`);
-    // WsResponse.custom(recipientSocket, {
-    //   type: "MESSAGE",
-    //   from: fromUsername,
-    //   content: messageContent,
-    //   chatId: chatId,
-    // });
     await addMessageToStream({
       type: "MESSAGE",
       from: fromUsername,
