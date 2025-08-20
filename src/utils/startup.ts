@@ -1,5 +1,6 @@
 import { PORT, WS_CHAT_PORT, WS_PRESENCE_PORT } from "..";
 import { getOfflineQueue } from "../queue/offlineQueue";
+import { startWorker } from "../redis/chatMessagesStreams";
 import { subscribeToPresenceUpdates } from "../redis/presenceSubscriber";
 import { createHttpServer } from "../server/http";
 import { createWebSocketServer } from "../server/ws";

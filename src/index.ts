@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { FLUSH_INTERVAL, flushOfflineMessages } from "./queue/offlineWorker";
+import { createConsumer, startWorker } from "./redis/chatMessagesStreams";
 import { logger } from "./utils/logger";
 import { gracefulShutdown, setupShutdownHandlers } from "./utils/shutdown";
 import {
@@ -23,7 +24,10 @@ async function startServer() {
 
     await startWebSocketServers();
 
+    const workerData = await createConsumer();
+
     setInterval(flushOfflineMessages, FLUSH_INTERVAL);
+    setInterval(() => startWorker(workerData), FLUSH_INTERVAL);
 
     logger.info("✅ All services started successfully");
     logger.info(`✅ Server ${process.pid} started all services successfully.`);
