@@ -12,7 +12,7 @@ dotenv.config();
 
 export const PORT = 3000;
 export const WS_CHAT_PORT = 4000;
-export const WS_PRESENCE_PORT = 4001;
+export const WS_PRESENCE_PORT = 5000;
 
 async function startServer() {
   try {

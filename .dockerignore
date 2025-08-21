@@ -84,3 +84,9 @@ scripts/
 secure-connect-my-cassandra-db.zip
 .env.local
 .env.production
+
+benchmark/
+dist/
+logs/
+node_modules/
+test/

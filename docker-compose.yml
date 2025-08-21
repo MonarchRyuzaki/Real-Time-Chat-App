@@ -12,8 +12,11 @@ services:
     ports:
       - "3000:3000" # HTTP server port
       - "4000:4000" # WebSocket server port
+      - "5000:5000" # Presence WebSocket server port
     env_file:
       - .env
+    environment:
+      - SERVER_ID=chat-app-1
     volumes:
       - ./logs:/app/logs # Mount logs directory
       - ./secure-connect-my-cassandra-db.zip:/app/secure-connect-my-cassandra-db.zip:ro # Mount Cassandra bundle

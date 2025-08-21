@@ -25,7 +25,7 @@ COPY --from=builder /app/dist ./dist
 
 COPY --from=builder /app/src/generated ./dist/generated
 
-EXPOSE 3000 4000 4001
+EXPOSE 3000 4000 5000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (res) => { \
