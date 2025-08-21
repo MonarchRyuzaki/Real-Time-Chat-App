@@ -1,6 +1,8 @@
+import { get } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { chatConnectionManager } from "../services/connectionService";
 import { prisma } from "../services/prisma";
+import { getClient } from "../services/redis";
 import { MessageHandlerMap } from "../types/handlerTypes";
 import {
   FetchFriendsMetaMessage,
@@ -21,7 +23,10 @@ import {
   oneToOneChatHandler,
 } from "./handlers/oneToOneChatHandlers";
 
-export function chatHandler(ws: WebSocket, wss: WebSocketServer): void {
+export async function chatHandler(
+  ws: WebSocket,
+  wss: WebSocketServer
+): Promise<void> {
   const messageHandler: MessageHandlerMap = {
     INIT_DATA: initChatHandler,
     NEW_ONE_TO_ONE_CHAT: newOnetoOneChatHandler,
@@ -34,7 +39,14 @@ export function chatHandler(ws: WebSocket, wss: WebSocketServer): void {
     OFFLINE_MESSAGES_ACK: offlineMessagesAckHandler,
     DISCONNECT: disconnectHandler,
   };
-
+  const client = await getClient();
+  const username = chatConnectionManager.getUsername(ws);
+  if (client && username) {
+    await client.set(
+      `user-location:${username}`,
+      process.env.SERVER_ID || "default-server"
+    );
+  }
   ws.on("message", (data: string) => {
     handleMessage(ws, data, messageHandler);
   });
@@ -214,9 +226,13 @@ async function offlineMessagesAckHandler(
   }
 }
 
-function disconnectHandler(ws: WebSocket): void {
+async function disconnectHandler(ws: WebSocket): Promise<void> {
   const username = chatConnectionManager.getUsername(ws);
-
+  const client = await getClient();
+  if (!client) {
+    return;
+  }
+  await client.del(`user-location:${username}`);
   try {
     if (username) {
       chatConnectionManager.removeConnection(ws);

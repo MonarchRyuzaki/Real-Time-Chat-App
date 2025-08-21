@@ -90,6 +90,8 @@ let presenceWebSocket: WebSocket | null = null;
 let presenceConnected = false;
 let shouldRespondToPings = true; // Flag to simulate presence disconnection
 
+let portNumber = 4000;
+
 // Create readline interface for non-blocking input
 const rl = readline.createInterface({
   input: process.stdin,
@@ -124,13 +126,16 @@ async function registerUser(
   try {
     console.log("⏳ Registering user...");
 
-    const response = await fetch("http://localhost/api/auth/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    const response = await fetch(
+      "http://localhost/api/auth/api/auth/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      }
+    );
 
     const data = (await response.json()) as RegisterResponse;
 
@@ -274,7 +279,7 @@ async function connectToChatWebSocket(): Promise<WebSocket> {
     console.log("📡 Connecting to Chat WebSocket server...");
     isConnecting = true;
 
-    const ws = new WebSocket(`ws://localhost/ws/chat/?username=${username}`, {
+    const ws = new WebSocket(`ws://localhost:${portNumber}/?username=${username}`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -324,11 +329,14 @@ async function connectToPresenceWebSocket(): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
     console.log("📡 Connecting to Presence WebSocket server...");
 
-    const ws = new WebSocket(`ws://localhost/ws/presence/?username=${username}`, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
+    const ws = new WebSocket(
+      `ws://localhost/ws/presence/?username=${username}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
 
     const connectionTimeout = setTimeout(() => {
       ws.close();
@@ -602,6 +610,21 @@ async function init() {
   try {
     showHeader();
     console.log("Welcome to Real-Time Chat App!");
+
+    // Choose connection mode
+    console.log("\n=== Connection Mode ===");
+    console.log("1. Port 4000");
+    console.log("2. Port 4001");
+
+    const modeChoice = await question("Choose connection mode (1-2): ");
+
+    if (modeChoice === "2") {
+      portNumber = 4001;
+    } else {
+      portNumber = 4000;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Authenticate user first
     await authenticateUser();

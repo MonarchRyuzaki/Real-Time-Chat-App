@@ -21,10 +21,6 @@ export async function presenceHandler(
   if (client && username) {
     ws.username = username;
     await client.publish("online", username);
-    await client.set(
-      `user-location:${username}`,
-      process.env.SERVER_ID || "default-server"
-    );
   }
   ws.on("pong", async () => {
     const username = ws.username;
@@ -78,7 +74,6 @@ async function cleanupConnection(ws: PresenceWebSocket): Promise<void> {
           .multi()
           .publish("offline", username)
           .del(`online_users:${username}`)
-          .del(`user-location:${username}`)
           .exec();
         console.log(`Removed online status for ${username}`);
       }
