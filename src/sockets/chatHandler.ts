@@ -39,14 +39,7 @@ export async function chatHandler(
     OFFLINE_MESSAGES_ACK: offlineMessagesAckHandler,
     DISCONNECT: disconnectHandler,
   };
-  const client = await getClient();
-  const username = chatConnectionManager.getUsername(ws);
-  if (client && username) {
-    await client.set(
-      `user-location:${username}`,
-      process.env.SERVER_ID || "default-server"
-    );
-  }
+
   ws.on("message", (data: string) => {
     handleMessage(ws, data, messageHandler);
   });
@@ -88,10 +81,21 @@ function handleMessage(
   }
 }
 
-function handleDisconnect(ws: WebSocket): void {
+async function handleDisconnect(ws: WebSocket): Promise<void> {
   try {
     const username = chatConnectionManager.getUsername(ws);
+
+    // Clean up Redis user location
+    if (username) {
+      const client = await getClient();
+      if (client) {
+        await client.del(`user-location:${username}`);
+        console.log(`Cleaned up user location for ${username}`);
+      }
+    }
+
     chatConnectionManager.removeConnection(ws);
+
     if (username) {
       console.log(`User ${username} disconnected`);
     } else {
@@ -120,6 +124,25 @@ async function initChatHandler(ws: WebSocket): Promise<void> {
       `WebSocket connection closed during initialization for user: ${username}`
     );
     return;
+  }
+
+  // SET USER LOCATION HERE - after we confirm the connection is valid
+  try {
+    const client = await getClient();
+    if (client && username) {
+      await client.set(
+        `user-location:${username}`,
+        process.env.SERVER_ID || "default-server"
+      );
+      console.log(
+        `Set user location for ${username} on server ${process.env.SERVER_ID}`
+      );
+    }
+  } catch (locationError) {
+    console.error(
+      `Failed to set user location for ${username}:`,
+      locationError
+    );
   }
 
   try {
@@ -228,11 +251,18 @@ async function offlineMessagesAckHandler(
 
 async function disconnectHandler(ws: WebSocket): Promise<void> {
   const username = chatConnectionManager.getUsername(ws);
-  const client = await getClient();
-  if (!client) {
-    return;
+
+  // Clean up Redis user location
+  if (username) {
+    const client = await getClient();
+    if (client) {
+      await client.del(`user-location:${username}`);
+      console.log(
+        `Cleaned up user location for ${username} in disconnect handler`
+      );
+    }
   }
-  await client.del(`user-location:${username}`);
+
   try {
     if (username) {
       chatConnectionManager.removeConnection(ws);
