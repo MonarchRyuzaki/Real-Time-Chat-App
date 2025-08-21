@@ -50,10 +50,10 @@ log_message() {
 
 # Function to check if server is responding
 check_server_health() {
-    log_message "🔍 Checking server health at ws://localhost:4000"
+    log_message "🔍 Checking server health at ws://localhost/ws/chat/"
     
     # Use curl to check if the server is accessible (HTTP check)
-    if curl -s --connect-timeout 5 http://localhost:4000 >/dev/null 2>&1; then
+    if curl -s --connect-timeout 5 http://localhost/ws/chat/ >/dev/null 2>&1; then
         log_message "✅ Server is responding to HTTP requests"
         return 0
     else
@@ -100,7 +100,7 @@ declare -a TEST_CONFIGS=(
 
 # Initial server health check
 if ! check_server_health; then
-    log_message "💥 Server is not responding! Please start your WebSocket server on ws://localhost:4000"
+    log_message "💥 Server is not responding! Please start your WebSocket server on ws://localhost/ws/chat/"
     exit 1
 fi
 
@@ -154,7 +154,7 @@ for ((i=start_index; i<${#TEST_CONFIGS[@]}; i++)); do
     
     cat > "$temp_config" << EOF
 config:
-  target: 'ws://localhost:4000'
+  target: 'ws://localhost/ws/chat'
   processor: './benchmark/artillery-processor.ts'
   phases:
     - duration: $duration

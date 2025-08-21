@@ -1,5 +1,5 @@
 config:
-  target: 'ws://localhost:4000'
+  target: 'ws://localhost/ws/chat'
   processor: './artillery-processor.ts'
   phases:
     - duration: 1
