@@ -27,7 +27,7 @@ async function startServer() {
     const workerData = await createConsumer();
 
     setInterval(flushOfflineMessages, FLUSH_INTERVAL);
-    setInterval(() => startWorker(workerData), FLUSH_INTERVAL);
+    setInterval(() => startWorker(workerData), 2000);
 
     logger.info("✅ All services started successfully");
     logger.info(`✅ Server ${process.pid} started all services successfully.`);
