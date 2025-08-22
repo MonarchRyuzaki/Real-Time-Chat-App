@@ -7,6 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+    image: real-time-chat-app:latest
     container_name: real-time-chat-app
     restart: unless-stopped
     ports:
@@ -37,10 +38,7 @@ services:
 
   # Real-Time Chat Application - Instance 2
   chat-app-2:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
+    image: real-time-chat-app:latest
     container_name: real-time-chat-app-2
     restart: unless-stopped
     ports:
