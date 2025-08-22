@@ -1,0 +1,1157 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.One To One Chat": 3150,
+      "vusers.created": 3150,
+      "websocket.messages_sent": 34650,
+      "messages_sent": 31500,
+      "vusers.failed": 0,
+      "vusers.completed": 3150
+    },
+    "rates": {
+      "websocket.send_rate": 391,
+      "messages_sent_rate": 369
+    },
+    "firstCounterAt": 1755831105453,
+    "firstHistogramAt": 1755831106133,
+    "lastCounterAt": 1755831196530,
+    "lastHistogramAt": 1755831196530,
+    "firstMetricAt": 1755831105453,
+    "lastMetricAt": 1755831196530,
+    "period": 1755831190000,
+    "summaries": {
+      "handshake_latency": {
+        "min": 2.9,
+        "max": 19.8,
+        "count": 3150,
+        "mean": 4.2,
+        "p50": 3.9,
+        "median": 3.9,
+        "p75": 4.3,
+        "p90": 5.2,
+        "p95": 5.9,
+        "p99": 8.4,
+        "p999": 12.6
+      },
+      "latency": {
+        "min": 0,
+        "max": 2.9,
+        "count": 31500,
+        "mean": 0.1,
+        "p50": 0.1,
+        "median": 0.1,
+        "p75": 0.2,
+        "p90": 0.2,
+        "p95": 0.2,
+        "p99": 0.3,
+        "p999": 0.9
+      },
+      "vusers.session_length": {
+        "min": 1040,
+        "max": 1690.3,
+        "count": 3150,
+        "mean": 1130.8,
+        "p50": 1064.4,
+        "median": 1064.4,
+        "p75": 1249.1,
+        "p90": 1274.3,
+        "p95": 1300.1,
+        "p99": 1326.4,
+        "p999": 1620
+      }
+    },
+    "histograms": {
+      "handshake_latency": {
+        "min": 2.9,
+        "max": 19.8,
+        "count": 3150,
+        "mean": 4.2,
+        "p50": 3.9,
+        "median": 3.9,
+        "p75": 4.3,
+        "p90": 5.2,
+        "p95": 5.9,
+        "p99": 8.4,
+        "p999": 12.6
+      },
+      "latency": {
+        "min": 0,
+        "max": 2.9,
+        "count": 31500,
+        "mean": 0.1,
+        "p50": 0.1,
+        "median": 0.1,
+        "p75": 0.2,
+        "p90": 0.2,
+        "p95": 0.2,
+        "p99": 0.3,
+        "p999": 0.9
+      },
+      "vusers.session_length": {
+        "min": 1040,
+        "max": 1690.3,
+        "count": 3150,
+        "mean": 1130.8,
+        "p50": 1064.4,
+        "median": 1064.4,
+        "p75": 1249.1,
+        "p90": 1274.3,
+        "p95": 1300.1,
+        "p99": 1326.4,
+        "p999": 1620
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.One To One Chat": 93,
+        "vusers.created": 93,
+        "websocket.messages_sent": 958,
+        "messages_sent": 890,
+        "vusers.failed": 0,
+        "vusers.completed": 68
+      },
+      "rates": {
+        "websocket.send_rate": 277,
+        "messages_sent_rate": 258
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831105453,
+      "firstHistogramAt": 1755831106133,
+      "lastCounterAt": 1755831109990,
+      "lastHistogramAt": 1755831109990,
+      "firstMetricAt": 1755831105453,
+      "lastMetricAt": 1755831109990,
+      "period": "1755831100000",
+      "summaries": {
+        "handshake_latency": {
+          "min": 3.4,
+          "max": 12.9,
+          "count": 89,
+          "mean": 4.8,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 8.6,
+          "p95": 8.9,
+          "p99": 11.4,
+          "p999": 11.4
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 2.9,
+          "count": 890,
+          "mean": 0.2,
+          "p50": 0.2,
+          "median": 0.2,
+          "p75": 0.2,
+          "p90": 0.4,
+          "p95": 0.4,
+          "p99": 2,
+          "p999": 2.6
+        },
+        "vusers.session_length": {
+          "min": 1213,
+          "max": 1690.3,
+          "count": 68,
+          "mean": 1329,
+          "p50": 1274.3,
+          "median": 1274.3,
+          "p75": 1326.4,
+          "p90": 1525.7,
+          "p95": 1620,
+          "p99": 1686.1,
+          "p999": 1686.1
+        }
+      },
+      "histograms": {
+        "handshake_latency": {
+          "min": 3.4,
+          "max": 12.9,
+          "count": 89,
+          "mean": 4.8,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 8.6,
+          "p95": 8.9,
+          "p99": 11.4,
+          "p999": 11.4
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 2.9,
+          "count": 890,
+          "mean": 0.2,
+          "p50": 0.2,
+          "median": 0.2,
+          "p75": 0.2,
+          "p90": 0.4,
+          "p95": 0.4,
+          "p99": 2,
+          "p999": 2.6
+        },
+        "vusers.session_length": {
+          "min": 1213,
+          "max": 1690.3,
+          "count": 68,
+          "mean": 1329,
+          "p50": 1274.3,
+          "median": 1274.3,
+          "p75": 1326.4,
+          "p90": 1525.7,
+          "p95": 1620,
+          "p99": 1686.1,
+          "p999": 1686.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 2524,
+        "vusers.failed": 0,
+        "vusers.completed": 224,
+        "messages_sent": 2300,
+        "vusers.created_by_name.One To One Chat": 232,
+        "vusers.created": 232
+      },
+      "rates": {
+        "websocket.send_rate": 266,
+        "messages_sent_rate": 243
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831110002,
+      "firstHistogramAt": 1755831110049,
+      "lastCounterAt": 1755831119989,
+      "lastHistogramAt": 1755831119989,
+      "firstMetricAt": 1755831110002,
+      "lastMetricAt": 1755831119989,
+      "period": "1755831110000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1040,
+          "max": 1355.4,
+          "count": 224,
+          "mean": 1260,
+          "p50": 1274.3,
+          "median": 1274.3,
+          "p75": 1300.1,
+          "p90": 1300.1,
+          "p95": 1326.4,
+          "p99": 1326.4,
+          "p999": 1353.1
+        },
+        "handshake_latency": {
+          "min": 3,
+          "max": 10.1,
+          "count": 230,
+          "mean": 4,
+          "p50": 3.8,
+          "median": 3.8,
+          "p75": 4.1,
+          "p90": 4.5,
+          "p95": 5.1,
+          "p99": 6.6,
+          "p999": 9.7
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 0.5,
+          "count": 2300,
+          "mean": 0.2,
+          "p50": 0.2,
+          "median": 0.2,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.3,
+          "p99": 0.3,
+          "p999": 0.4
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1040,
+          "max": 1355.4,
+          "count": 224,
+          "mean": 1260,
+          "p50": 1274.3,
+          "median": 1274.3,
+          "p75": 1300.1,
+          "p90": 1300.1,
+          "p95": 1326.4,
+          "p99": 1326.4,
+          "p999": 1353.1
+        },
+        "handshake_latency": {
+          "min": 3,
+          "max": 10.1,
+          "count": 230,
+          "mean": 4,
+          "p50": 3.8,
+          "median": 3.8,
+          "p75": 4.1,
+          "p90": 4.5,
+          "p95": 5.1,
+          "p99": 6.6,
+          "p999": 9.7
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 0.5,
+          "count": 2300,
+          "mean": 0.2,
+          "p50": 0.2,
+          "median": 0.2,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.3,
+          "p99": 0.3,
+          "p999": 0.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 2935,
+        "messages_sent": 2670,
+        "vusers.failed": 0,
+        "vusers.completed": 265,
+        "vusers.created_by_name.One To One Chat": 265,
+        "vusers.created": 265
+      },
+      "rates": {
+        "websocket.send_rate": 303,
+        "messages_sent_rate": 281
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831120005,
+      "firstHistogramAt": 1755831120005,
+      "lastCounterAt": 1755831129996,
+      "lastHistogramAt": 1755831129996,
+      "firstMetricAt": 1755831120005,
+      "lastMetricAt": 1755831129996,
+      "period": "1755831120000",
+      "summaries": {
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 11.4,
+          "count": 267,
+          "mean": 3.9,
+          "p50": 3.6,
+          "median": 3.6,
+          "p75": 4,
+          "p90": 4.5,
+          "p95": 5.1,
+          "p99": 6.4,
+          "p999": 6.8
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.4,
+          "count": 2670,
+          "mean": 0.2,
+          "p50": 0.2,
+          "median": 0.2,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.9
+        },
+        "vusers.session_length": {
+          "min": 1040.7,
+          "max": 1334.7,
+          "count": 265,
+          "mean": 1231.5,
+          "p50": 1274.3,
+          "median": 1274.3,
+          "p75": 1274.3,
+          "p90": 1300.1,
+          "p95": 1300.1,
+          "p99": 1326.4,
+          "p999": 1326.4
+        }
+      },
+      "histograms": {
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 11.4,
+          "count": 267,
+          "mean": 3.9,
+          "p50": 3.6,
+          "median": 3.6,
+          "p75": 4,
+          "p90": 4.5,
+          "p95": 5.1,
+          "p99": 6.4,
+          "p999": 6.8
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.4,
+          "count": 2670,
+          "mean": 0.2,
+          "p50": 0.2,
+          "median": 0.2,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.9
+        },
+        "vusers.session_length": {
+          "min": 1040.7,
+          "max": 1334.7,
+          "count": 265,
+          "mean": 1231.5,
+          "p50": 1274.3,
+          "median": 1274.3,
+          "p75": 1274.3,
+          "p90": 1300.1,
+          "p95": 1300.1,
+          "p99": 1326.4,
+          "p999": 1326.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 3223,
+        "messages_sent": 2930,
+        "vusers.failed": 0,
+        "vusers.completed": 293,
+        "vusers.created_by_name.One To One Chat": 297,
+        "vusers.created": 297
+      },
+      "rates": {
+        "websocket.send_rate": 330,
+        "messages_sent_rate": 309
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831130003,
+      "firstHistogramAt": 1755831130003,
+      "lastCounterAt": 1755831139995,
+      "lastHistogramAt": 1755831139995,
+      "firstMetricAt": 1755831130003,
+      "lastMetricAt": 1755831139995,
+      "period": "1755831130000",
+      "summaries": {
+        "handshake_latency": {
+          "min": 3,
+          "max": 16.1,
+          "count": 293,
+          "mean": 3.9,
+          "p50": 3.6,
+          "median": 3.6,
+          "p75": 4,
+          "p90": 4.4,
+          "p95": 4.9,
+          "p99": 9.7,
+          "p999": 11.6
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.1,
+          "count": 2930,
+          "mean": 0.2,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.9
+        },
+        "vusers.session_length": {
+          "min": 1041.6,
+          "max": 1333.2,
+          "count": 293,
+          "mean": 1169.8,
+          "p50": 1224.4,
+          "median": 1224.4,
+          "p75": 1274.3,
+          "p90": 1274.3,
+          "p95": 1300.1,
+          "p99": 1326.4,
+          "p999": 1326.4
+        }
+      },
+      "histograms": {
+        "handshake_latency": {
+          "min": 3,
+          "max": 16.1,
+          "count": 293,
+          "mean": 3.9,
+          "p50": 3.6,
+          "median": 3.6,
+          "p75": 4,
+          "p90": 4.4,
+          "p95": 4.9,
+          "p99": 9.7,
+          "p999": 11.6
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.1,
+          "count": 2930,
+          "mean": 0.2,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.9
+        },
+        "vusers.session_length": {
+          "min": 1041.6,
+          "max": 1333.2,
+          "count": 293,
+          "mean": 1169.8,
+          "p50": 1224.4,
+          "median": 1224.4,
+          "p75": 1274.3,
+          "p90": 1274.3,
+          "p95": 1300.1,
+          "p99": 1326.4,
+          "p999": 1326.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 3656,
+        "vusers.failed": 0,
+        "vusers.completed": 326,
+        "messages_sent": 3330,
+        "vusers.created_by_name.One To One Chat": 330,
+        "vusers.created": 330
+      },
+      "rates": {
+        "websocket.send_rate": 375,
+        "messages_sent_rate": 348
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831140008,
+      "firstHistogramAt": 1755831140034,
+      "lastCounterAt": 1755831149992,
+      "lastHistogramAt": 1755831149992,
+      "firstMetricAt": 1755831140008,
+      "lastMetricAt": 1755831149992,
+      "period": "1755831140000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1042.3,
+          "max": 1332,
+          "count": 326,
+          "mean": 1138,
+          "p50": 1085.9,
+          "median": 1085.9,
+          "p75": 1249.1,
+          "p90": 1274.3,
+          "p95": 1274.3,
+          "p99": 1300.1,
+          "p999": 1326.4
+        },
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 19.8,
+          "count": 333,
+          "mean": 4.2,
+          "p50": 3.9,
+          "median": 3.9,
+          "p75": 4.3,
+          "p90": 4.9,
+          "p95": 5.6,
+          "p99": 8.4,
+          "p999": 18.4
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1,
+          "count": 3330,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.8
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1042.3,
+          "max": 1332,
+          "count": 326,
+          "mean": 1138,
+          "p50": 1085.9,
+          "median": 1085.9,
+          "p75": 1249.1,
+          "p90": 1274.3,
+          "p95": 1274.3,
+          "p99": 1300.1,
+          "p999": 1326.4
+        },
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 19.8,
+          "count": 333,
+          "mean": 4.2,
+          "p50": 3.9,
+          "median": 3.9,
+          "p75": 4.3,
+          "p90": 4.9,
+          "p95": 5.6,
+          "p99": 8.4,
+          "p999": 18.4
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1,
+          "count": 3330,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.8
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 4068,
+        "vusers.failed": 0,
+        "vusers.completed": 368,
+        "messages_sent": 3700,
+        "vusers.created_by_name.One To One Chat": 368,
+        "vusers.created": 368
+      },
+      "rates": {
+        "websocket.send_rate": 414,
+        "messages_sent_rate": 381
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831150014,
+      "firstHistogramAt": 1755831150014,
+      "lastCounterAt": 1755831159999,
+      "lastHistogramAt": 1755831159999,
+      "firstMetricAt": 1755831150014,
+      "lastMetricAt": 1755831159999,
+      "period": "1755831150000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1040.1,
+          "max": 1333.2,
+          "count": 368,
+          "mean": 1100.7,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1085.9,
+          "p90": 1274.3,
+          "p95": 1274.3,
+          "p99": 1300.1,
+          "p999": 1300.1
+        },
+        "handshake_latency": {
+          "min": 3,
+          "max": 11.6,
+          "count": 370,
+          "mean": 4.2,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.4,
+          "p90": 5.1,
+          "p95": 5.4,
+          "p99": 6.8,
+          "p999": 11.6
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.2,
+          "count": 3700,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.9
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1040.1,
+          "max": 1333.2,
+          "count": 368,
+          "mean": 1100.7,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1085.9,
+          "p90": 1274.3,
+          "p95": 1274.3,
+          "p99": 1300.1,
+          "p999": 1300.1
+        },
+        "handshake_latency": {
+          "min": 3,
+          "max": 11.6,
+          "count": 370,
+          "mean": 4.2,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.4,
+          "p90": 5.1,
+          "p95": 5.4,
+          "p99": 6.8,
+          "p999": 11.6
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.2,
+          "count": 3700,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 4385,
+        "vusers.failed": 0,
+        "vusers.completed": 395,
+        "vusers.created_by_name.One To One Chat": 400,
+        "vusers.created": 400,
+        "messages_sent": 3990
+      },
+      "rates": {
+        "websocket.send_rate": 450,
+        "messages_sent_rate": 417
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831160030,
+      "firstHistogramAt": 1755831160033,
+      "lastCounterAt": 1755831169993,
+      "lastHistogramAt": 1755831169994,
+      "firstMetricAt": 1755831160030,
+      "lastMetricAt": 1755831169994,
+      "period": "1755831160000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1040.9,
+          "max": 1312.7,
+          "count": 395,
+          "mean": 1102.7,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1085.9,
+          "p90": 1274.3,
+          "p95": 1274.3,
+          "p99": 1300.1,
+          "p999": 1300.1
+        },
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 9,
+          "count": 399,
+          "mean": 4.3,
+          "p50": 4.1,
+          "median": 4.1,
+          "p75": 4.7,
+          "p90": 5.5,
+          "p95": 6,
+          "p99": 7.5,
+          "p999": 7.9
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 0.9,
+          "count": 3990,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.8
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1040.9,
+          "max": 1312.7,
+          "count": 395,
+          "mean": 1102.7,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1085.9,
+          "p90": 1274.3,
+          "p95": 1274.3,
+          "p99": 1300.1,
+          "p999": 1300.1
+        },
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 9,
+          "count": 399,
+          "mean": 4.3,
+          "p50": 4.1,
+          "median": 4.1,
+          "p75": 4.7,
+          "p90": 5.5,
+          "p95": 6,
+          "p99": 7.5,
+          "p999": 7.9
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 0.9,
+          "count": 3990,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.3,
+          "p999": 0.8
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 4783,
+        "messages_sent": 4350,
+        "vusers.failed": 0,
+        "vusers.completed": 433,
+        "vusers.created_by_name.One To One Chat": 435,
+        "vusers.created": 435
+      },
+      "rates": {
+        "websocket.send_rate": 489,
+        "messages_sent_rate": 450
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831170014,
+      "firstHistogramAt": 1755831170023,
+      "lastCounterAt": 1755831179982,
+      "lastHistogramAt": 1755831179982,
+      "firstMetricAt": 1755831170014,
+      "lastMetricAt": 1755831179982,
+      "period": "1755831170000",
+      "summaries": {
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 12.6,
+          "count": 435,
+          "mean": 4.3,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 5.4,
+          "p95": 6.2,
+          "p99": 8.8,
+          "p999": 12.6
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.3,
+          "count": 4350,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "p999": 0.8
+        },
+        "vusers.session_length": {
+          "min": 1040.4,
+          "max": 1312.1,
+          "count": 433,
+          "mean": 1092.8,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1064.4,
+          "p90": 1249.1,
+          "p95": 1274.3,
+          "p99": 1274.3,
+          "p999": 1300.1
+        }
+      },
+      "histograms": {
+        "handshake_latency": {
+          "min": 2.9,
+          "max": 12.6,
+          "count": 435,
+          "mean": 4.3,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 5.4,
+          "p95": 6.2,
+          "p99": 8.8,
+          "p999": 12.6
+        },
+        "latency": {
+          "min": 0.1,
+          "max": 1.3,
+          "count": 4350,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "p999": 0.8
+        },
+        "vusers.session_length": {
+          "min": 1040.4,
+          "max": 1312.1,
+          "count": 433,
+          "mean": 1092.8,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1064.4,
+          "p90": 1249.1,
+          "p95": 1274.3,
+          "p99": 1274.3,
+          "p999": 1300.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 5153,
+        "messages_sent": 4690,
+        "vusers.failed": 0,
+        "vusers.completed": 463,
+        "vusers.created_by_name.One To One Chat": 468,
+        "vusers.created": 468
+      },
+      "rates": {
+        "websocket.send_rate": 526,
+        "messages_sent_rate": 480
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831180010,
+      "firstHistogramAt": 1755831180010,
+      "lastCounterAt": 1755831189981,
+      "lastHistogramAt": 1755831189981,
+      "firstMetricAt": 1755831180010,
+      "lastMetricAt": 1755831189981,
+      "period": "1755831180000",
+      "summaries": {
+        "handshake_latency": {
+          "min": 3,
+          "max": 11.7,
+          "count": 469,
+          "mean": 4.3,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 5.3,
+          "p95": 5.9,
+          "p99": 6.8,
+          "p999": 7.3
+        },
+        "latency": {
+          "min": 0,
+          "max": 0.8,
+          "count": 4690,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "p999": 0.7
+        },
+        "vusers.session_length": {
+          "min": 1040.1,
+          "max": 1293.4,
+          "count": 463,
+          "mean": 1074,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1064.4,
+          "p90": 1085.9,
+          "p95": 1249.1,
+          "p99": 1274.3,
+          "p999": 1274.3
+        }
+      },
+      "histograms": {
+        "handshake_latency": {
+          "min": 3,
+          "max": 11.7,
+          "count": 469,
+          "mean": 4.3,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 5.3,
+          "p95": 5.9,
+          "p99": 6.8,
+          "p999": 7.3
+        },
+        "latency": {
+          "min": 0,
+          "max": 0.8,
+          "count": 4690,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "p999": 0.7
+        },
+        "vusers.session_length": {
+          "min": 1040.1,
+          "max": 1293.4,
+          "count": 463,
+          "mean": 1074,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1064.4,
+          "p90": 1085.9,
+          "p95": 1249.1,
+          "p99": 1274.3,
+          "p999": 1274.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "websocket.messages_sent": 2965,
+        "messages_sent": 2650,
+        "vusers.failed": 0,
+        "vusers.completed": 315,
+        "vusers.created_by_name.One To One Chat": 262,
+        "vusers.created": 262
+      },
+      "rates": {
+        "websocket.send_rate": 479,
+        "messages_sent_rate": 515
+      },
+      "websocket.send_rate": null,
+      "messages_sent_rate": null,
+      "firstCounterAt": 1755831190007,
+      "firstHistogramAt": 1755831190007,
+      "lastCounterAt": 1755831196530,
+      "lastHistogramAt": 1755831196530,
+      "firstMetricAt": 1755831190007,
+      "lastMetricAt": 1755831196530,
+      "period": "1755831190000",
+      "summaries": {
+        "handshake_latency": {
+          "min": 3,
+          "max": 8.1,
+          "count": 265,
+          "mean": 4.3,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 5.4,
+          "p95": 6,
+          "p99": 7.5,
+          "p999": 7.9
+        },
+        "latency": {
+          "min": 0,
+          "max": 0.8,
+          "count": 2650,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "p999": 0.7
+        },
+        "vusers.session_length": {
+          "min": 1040.6,
+          "max": 1282.1,
+          "count": 315,
+          "mean": 1074.1,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1064.4,
+          "p90": 1085.9,
+          "p95": 1224.4,
+          "p99": 1249.1,
+          "p999": 1274.3
+        }
+      },
+      "histograms": {
+        "handshake_latency": {
+          "min": 3,
+          "max": 8.1,
+          "count": 265,
+          "mean": 4.3,
+          "p50": 4,
+          "median": 4,
+          "p75": 4.5,
+          "p90": 5.4,
+          "p95": 6,
+          "p99": 7.5,
+          "p999": 7.9
+        },
+        "latency": {
+          "min": 0,
+          "max": 0.8,
+          "count": 2650,
+          "mean": 0.1,
+          "p50": 0.1,
+          "median": 0.1,
+          "p75": 0.1,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "p999": 0.7
+        },
+        "vusers.session_length": {
+          "min": 1040.6,
+          "max": 1282.1,
+          "count": 315,
+          "mean": 1074.1,
+          "p50": 1064.4,
+          "median": 1064.4,
+          "p75": 1064.4,
+          "p90": 1085.9,
+          "p95": 1224.4,
+          "p99": 1249.1,
+          "p999": 1274.3
+        }
+      }
+    }
+  ]
+}
