@@ -8,6 +8,7 @@ import {
   startHttpServer,
   startWebSocketServers,
 } from "./utils/startup";
+import { clearOfflineQueue, clearRedisStreams } from "./utils/cleanup";
 dotenv.config();
 
 export const PORT = 3000;
@@ -24,6 +25,8 @@ async function startServer() {
 
     await startWebSocketServers();
 
+    // await clearOfflineQueue();
+    // await clearRedisStreams();
     const workerData = await createConsumer();
 
     setInterval(flushOfflineMessages, FLUSH_INTERVAL);

@@ -1,0 +1,348 @@
+WebSocket Connection Documentation - Real-Time Chat App
+🔌 WebSocket Servers
+Chat Server: ws://localhost:4000
+Handles all messaging (private & group chats)
+Requires JWT authentication immediately after connection
+Presence Server: ws://localhost:5000
+Tracks user online/offline status
+Requires JWT authentication immediately after connection
+🔑 Authentication Flow
+CRITICAL: Send auth message immediately after WebSocket opens:
+// Required auth message format for both servers
+{
+  "type": "AUTH",
+  "token": "your_jwt_token_here"
+}
+💬 Chat WebSocket Implementation
+class ChatWebSocket {
+  private ws: WebSocket | null = null;
+  private token: string;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+
+  constructor(token: string) {
+    this.token = token;
+  }
+
+  connect() {
+    try {
+      this.ws = new WebSocket('ws://localhost:4000');
+      
+      this.ws.onopen = () => {
+        console.log('Chat WebSocket connected');
+        // MUST authenticate immediately
+        this.send({
+          type: "AUTH",
+          token: this.token
+        });
+        this.reconnectAttempts = 0;
+      };
+
+      this.ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        this.handleMessage(message);
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('Chat WebSocket error:', error);
+      };
+
+      this.ws.onclose = () => {
+        console.log('Chat WebSocket closed');
+        this.attemptReconnect();
+      };
+
+    } catch (error) {
+      console.error('Failed to connect to chat server:', error);
+    }
+  }
+
+  private handleMessage(message: any) {
+    switch (message.type) {
+      case "ONE_TO_ONE_CHAT":
+        // New private message received
+        this.onPrivateMessage(message);
+        break;
+        
+      case "GROUP_CHAT":
+        // New group message received
+        this.onGroupMessage(message);
+        break;
+        
+      case "ONE_TO_ONE_CHAT_HISTORY":
+        // Chat history loaded
+        this.onChatHistory(message);
+        break;
+        
+      case "GROUP_CHAT_HISTORY":
+        // Group history loaded
+        this.onGroupHistory(message);
+        break;
+        
+      case "SUCCESS":
+        console.log('Success:', message.msg);
+        break;
+        
+      case "ERROR":
+        console.error('Error:', message.msg);
+        break;
+        
+      case "INFO":
+        console.info('Info:', message.msg);
+        break;
+    }
+  }
+
+  // Send private message
+  sendPrivateMessage(to: string, content: string, chatId: string) {
+    const username = localStorage.getItem('username');
+    this.send({
+      type: "ONE_TO_ONE_CHAT",
+      from: username,
+      to: to,
+      content: content,
+      chatId: chatId
+    });
+  }
+
+  // Send group message
+  sendGroupMessage(groupId: string, content: string) {
+    const username = localStorage.getItem('username');
+    this.send({
+      type: "GROUP_CHAT",
+      from: username,
+      groupId: groupId,
+      content: content
+    });
+  }
+
+  // Get private chat history
+  getChatHistory(partnerUsername: string, chatId: string) {
+    const username = localStorage.getItem('username');
+    this.send({
+      type: "GET_ONE_TO_ONE_HISTORY",
+      from: username,
+      to: partnerUsername,
+      chatId: chatId
+    });
+  }
+
+  // Get group chat history
+  getGroupHistory(groupId: string) {
+    this.send({
+      type: "GET_GROUP_CHAT_HISTORY",
+      groupId: groupId
+    });
+  }
+
+  // Join a group
+  joinGroup(groupId: string) {
+    const username = localStorage.getItem('username');
+    this.send({
+      type: "JOIN_GROUP",
+      groupId: groupId,
+      username: username
+    });
+  }
+
+  // Leave a group
+  leaveGroup(groupId: string) {
+    const username = localStorage.getItem('username');
+    this.send({
+      type: "LEAVE_GROUP",
+      groupId: groupId,
+      username: username
+    });
+  }
+
+  private send(message: any) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.error('WebSocket not connected');
+    }
+  }
+
+  private attemptReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+      setTimeout(() => this.connect(), 2000 * this.reconnectAttempts);
+    }
+  }
+
+  disconnect() {
+    if (this.ws) {
+      this.send({ type: "DISCONNECT" });
+      this.ws.close();
+    }
+  }
+
+  // Callback functions - implement these in your app
+  private onPrivateMessage(message: any) {
+    // Handle incoming private message
+    console.log('Private message:', message);
+  }
+
+  private onGroupMessage(message: any) {
+    // Handle incoming group message
+    console.log('Group message:', message);
+  }
+
+  private onChatHistory(message: any) {
+    // Handle chat history
+    console.log('Chat history:', message);
+  }
+
+  private onGroupHistory(message: any) {
+    // Handle group history
+    console.log('Group history:', message);
+  }
+}
+👥 Presence WebSocket Implementation
+class PresenceWebSocket {
+  private ws: WebSocket | null = null;
+  private token: string;
+
+  constructor(token: string) {
+    this.token = token;
+  }
+
+  connect() {
+    try {
+      this.ws = new WebSocket('ws://localhost:5000');
+      
+      this.ws.onopen = () => {
+        console.log('Presence WebSocket connected');
+        // MUST authenticate immediately
+        this.send({
+          type: "AUTH",
+          token: this.token
+        });
+      };
+
+      this.ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        this.handlePresenceUpdate(message);
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('Presence WebSocket error:', error);
+      };
+
+      this.ws.onclose = () => {
+        console.log('Presence WebSocket closed');
+      };
+
+    } catch (error) {
+      console.error('Failed to connect to presence server:', error);
+    }
+  }
+
+  private handlePresenceUpdate(message: any) {
+    if (message.type === "PRESENCE_UPDATE") {
+      // User came online or went offline
+      this.onPresenceChange(message.username, message.status, message.timestamp);
+    }
+  }
+
+  private send(message: any) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    }
+  }
+
+  // Callback function - implement this in your app
+  private onPresenceChange(username: string, status: string, timestamp: string) {
+    console.log(`${username} is now ${status} at ${timestamp}`);
+    // Update UI to show user's online status
+  }
+
+  disconnect() {
+    if (this.ws) {
+      this.ws.close();
+    }
+  }
+}
+
+🚀 Usage in Your App
+// Initialize after login
+const initializeWebSockets = () => {
+  const token = localStorage.getItem('authToken');
+  
+  if (!token) {
+    console.error('No auth token found');
+    return;
+  }
+
+  // Initialize chat WebSocket
+  const chatWs = new ChatWebSocket(token);
+  chatWs.connect();
+
+  // Initialize presence WebSocket
+  const presenceWs = new PresenceWebSocket(token);
+  presenceWs.connect();
+
+  // Store references globally or in state management
+  window.chatWs = chatWs;
+  window.presenceWs = presenceWs;
+};
+
+// Call after successful login
+const handleLogin = async (username: string, password: string) => {
+  try {
+    await login(username, password);
+    console.log('Login successful');
+    
+    // Initialize WebSocket connections
+    initializeWebSockets();
+    
+    // Redirect to chat page
+  } catch (error) {
+    console.error('Login failed:', error);
+  }
+};
+
+// Cleanup on logout
+const handleLogout = async () => {
+  // Close WebSocket connections
+  if (window.chatWs) {
+    window.chatWs.disconnect();
+  }
+  if (window.presenceWs) {
+    window.presenceWs.disconnect();
+  }
+  
+  // Clear auth
+  await logout();
+};
+
+Received Message Formats
+// Private message received
+{
+  "type": "ONE_TO_ONE_CHAT",
+  "from": "john_doe",
+  "to": "current_user", 
+  "content": "Hello there!",
+  "chatId": "chat_123",
+  "timestamp": "2025-08-24T10:30:00Z",
+  "messageId": "msg_789"
+}
+
+// Group message received
+{
+  "type": "GROUP_CHAT",
+  "from": "jane_doe",
+  "groupId": "group_456",
+  "content": "Hello everyone!",
+  "timestamp": "2025-08-24T10:31:00Z", 
+  "messageId": "msg_790"
+}
+
+// Presence update
+{
+  "type": "PRESENCE_UPDATE",
+  "username": "john_doe",
+  "status": "online",
+  "timestamp": "2025-08-24T10:32:00Z"
+}

@@ -167,9 +167,9 @@ async function forwardMessageAndWaitForAck(
         port: parseInt(process.env.REDIS_PORT || "6379"),
       },
     });
-    
+
     await ackSubscriber.connect();
-    
+
     // Publish the message to the target server's private mailbox
     await redisClient.publish(forwardChannel, JSON.stringify(messageData));
     console.log(
@@ -237,8 +237,9 @@ async function forwardMessageAndWaitForAck(
 }
 
 export async function handleOfflineMessages(messageData: MessageDataType) {
+  const recipient = getOtherUser(messageData.chatId, messageData.from);
   await enqueueOfflineMessages({
-    username: messageData.from,
+    username: recipient!,
     messageId: messageData.messageId,
     partitionKey: messageData.chatId,
     messageType: "ONE_TO_ONE",

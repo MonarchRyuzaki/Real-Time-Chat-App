@@ -1,0 +1,150 @@
+Authentication Documentation - Real-Time Chat App
+🔐 Authentication Server (Port 3000)
+API Endpoints
+Register New User
+
+POST http://localhost:3000/auth/register
+
+Body:
+{
+  "username": "your_username",
+  "password": "your_password"
+}
+
+Response:
+{
+  "message": "User registered successfully",
+  "user": {
+    "id": "user_id_string",
+    "username": "your_username"
+  },
+  "token": "jwt_token_here"
+}
+
+Login User
+
+POST http://localhost:3000/auth/login
+
+Body:
+{
+  "username": "your_username", 
+  "password": "your_password"
+}
+
+Response:
+{
+  "message": "Login successful",
+  "user": {
+    "id": "user_id_string",
+    "username": "your_username"
+  },
+  "token": "jwt_token_here"
+}
+
+Logout User
+
+POST http://localhost:3000/auth/logout
+
+Headers:
+{
+  "Authorization": "Bearer your_jwt_token"
+}
+
+Response:
+{
+  "message": "Logout successful"
+}
+
+🔑 Frontend Implementation
+Simple Auth Functions
+
+// Login
+const login = async (username: string, password: string) => {
+  const response = await fetch('http://localhost:3000/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  
+  const data = await response.json();
+  
+  if (response.ok) {
+    // Save token and user info
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('username', data.user.username);
+    localStorage.setItem('userId', data.user.id);
+    return data;
+  } else {
+    throw new Error(data.message || 'Login failed');
+  }
+};
+
+// Register
+const register = async (username: string, password: string) => {
+  const response = await fetch('http://localhost:3000/auth/register', {
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  
+  const data = await response.json();
+  
+  if (response.ok) {
+    // Auto-login after registration
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('username', data.user.username);
+    localStorage.setItem('userId', data.user.id);
+    return data;
+  } else {
+    throw new Error(data.message || 'Registration failed');
+  }
+};
+
+// Logout
+const logout = async () => {
+  const token = localStorage.getItem('authToken');
+  
+  await fetch('http://localhost:3000/auth/logout', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  // Clear local storage
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('username');
+  localStorage.removeItem('userId');
+};
+
+// Check if user is logged in
+const isAuthenticated = () => {
+  return localStorage.getItem('authToken') !== null;
+};
+
+Usage in Components
+// Login form handler
+const handleLogin = async (e: FormEvent) => {
+  e.preventDefault();
+  
+  try {
+    const result = await login(username, password);
+    console.log('Login successful:', result);
+    // Redirect to chat page
+  } catch (error) {
+    console.error('Login error:', error.message);
+    // Show error message to user
+  }
+};
+
+// Register form handler  
+const handleRegister = async (e: FormEvent) => {
+  e.preventDefault();
+  
+  try {
+    const result = await register(username, password);
+    console.log('Registration successful:', result);
+    // Redirect to chat page
+  } catch (error) {
+    console.error('Registration error:', error.message);
+    // Show error message to user
+  }
+};
